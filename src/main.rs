@@ -8,7 +8,7 @@ use axum::{Router, routing::get};
 use sea_orm::{Database, DatabaseConnection};
 use std::net::SocketAddr;
 
-use crate::controller::{reader_controller::reader_get, rss_feed_controller::rss_feed_get};
+use crate::controller::{reader_controller::reader_get, rss_feed_controller::{rss_feed_get, rss_feed_get_by_uuid}};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -25,6 +25,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let app = Router::new()
         .route("/reader", get(reader_get))
         .route("/rss_feed", get(rss_feed_get))
+        .route("/rss_feed/:rss_feed_uuid", get(rss_feed_get_by_uuid))
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
