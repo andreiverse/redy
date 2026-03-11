@@ -8,7 +8,7 @@ legible = "0.4.2"
 readabilityrs = "0.1.2"
 reqwest = "0.13.2"
 tokio = { version = "1.50.0", features = ["full"] }
-chromiumoxide = "0.6"
+chromiumoxide = "0.9.1"
 axum = { version = "0.7", features = ["json"] }
 axum-oidc = "0.2"
 tower-sessions = "0.12"
