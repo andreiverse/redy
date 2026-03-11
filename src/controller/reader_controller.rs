@@ -1,6 +1,6 @@
-use axum::{extract::Query, response::{Html, Response, IntoResponse}};
+use axum::{Json, extract::Query, response::{Html, IntoResponse, Response}};
 use serde::Deserialize;
-use crate::{api::error::AppError, service::reader_service::parse_contents_of_url};
+use crate::{api::error::AppError, service::article_parser_service::parse_article_from_url};
 
 #[derive(Deserialize)]
 pub struct ReaderGetParams {
@@ -8,8 +8,8 @@ pub struct ReaderGetParams {
 }
 
 pub async fn reader_get(Query(params): Query<ReaderGetParams>) -> Response {
-    match parse_contents_of_url(&params.url).await {
-        Ok(html_content) => Html(html_content.html_content).into_response(),
+    match parse_article_from_url(&params.url).await {
+        Ok(html_content) => Json(html_content).into_response(),
 
         Err(e) => {
             let mut report = format!("Error: {}", e);

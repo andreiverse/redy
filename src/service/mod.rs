@@ -1,1 +1,1 @@
-pub mod reader_service;
+pub mod article_parser_service;
