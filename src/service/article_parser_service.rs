@@ -1,12 +1,8 @@
-use std::time::Duration;
-
 use anyhow::{Result, anyhow};
-use axum::http::{HeaderMap, HeaderValue, StatusCode};
-use chromiumoxide::browser::BrowserConfig;
-use futures::StreamExt;
 use legible::parse;
-use reqwest::Client;
 use serde::Serialize;
+
+use crate::service::article_fetcher::{normal, googlebot, amp, headless};
 
 #[derive(Serialize)]
 pub struct HtmlArticle {
@@ -14,127 +10,23 @@ pub struct HtmlArticle {
     pub title: String,
 }
 
-async fn fetch_with_client(client: &Client, url: &str) -> Result<(StatusCode, String)> {
-    let response = client.get(url).send().await?;
-    let status = response.status();
-    let body = response.text().await?;
-    Ok((status, body))
-}
-
-fn html_looks_blocked(html: &str) -> bool {
-    let lower = html.to_lowercase();
-    lower.len() < 10_000
-}
-
 pub async fn get_url_contents_headless(url: &str) -> Result<String> {
-    // --- 1 Normal browser request ---
-    eprintln!("[1] Trying classic request");
-
-    let normal_client = Client::builder()
-        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36")
-        .http1_only()
-        .timeout(Duration::from_secs(10))
-        .build()?;
-
-    if let Ok((status, html)) = fetch_with_client(&normal_client, url).await {
-        eprintln!(
-            "[1] Status: {} | Length: {} | Blocked: {}",
-            status,
-            html.len(),
-            html_looks_blocked(&html)
-        );
-        if status.is_success() && !html_looks_blocked(&html) && html.len() > 5000 {
-            eprintln!("[1] SUCCESS");
-            return Ok(html);
-        }
-    } else {
-        eprintln!("[1] Request failed");
+    if let Ok(html) = normal::fetch(url).await {
+        eprintln!("[1] SUCCESS");
+        return Ok(html);
     }
 
-    // --- 2 Googlebot ---
-    eprintln!("[2] Trying Googlebot request");
-
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        "User-Agent",
-        HeaderValue::from_static(
-            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-        ),
-    );
-
-    let googlebot_client = Client::builder()
-        .default_headers(headers)
-        .timeout(Duration::from_secs(10))
-        .build()?;
-
-    if let Ok((status, html)) = fetch_with_client(&googlebot_client, url).await {
-        eprintln!(
-            "[2] Status: {} | Length: {} | Blocked: {}",
-            status,
-            html.len(),
-            html_looks_blocked(&html)
-        );
-        if status.is_success() && !html_looks_blocked(&html) && html.len() > 5000 {
-            eprintln!("[2] SUCCESS");
-            return Ok(html);
-        }
-    } else {
-        eprintln!("[2] Request failed");
+    if let Ok(html) = googlebot::fetch(url).await {
+        eprintln!("[2] SUCCESS");
+        return Ok(html);
     }
 
-    // --- 3 AMP fallback ---
-    eprintln!("[3] Trying AMP");
-
-    let amp_url = if url.contains('?') {
-        format!("{url}&amp=1")
-    } else {
-        format!("{url}?amp=1")
-    };
-
-    if let Ok((status, html)) = fetch_with_client(&normal_client, &amp_url).await {
-        eprintln!(
-            "[3] Status: {} | Length: {} | Blocked: {}",
-            status,
-            html.len(),
-            html_looks_blocked(&html)
-        );
-        if status.is_success() && !html_looks_blocked(&html) && html.len() > 3000 {
-            eprintln!("[3] SUCCESS");
-            return Ok(html);
-        }
-    } else {
-        eprintln!("[3] Request failed");
+    if let Ok(html) = amp::fetch(url).await {
+        eprintln!("[3] SUCCESS");
+        return Ok(html);
     }
 
-    // --- 4 Headless ---
-    eprintln!("[4] Trying headless browser");
-
-    let html = fetch_with_headless(url).await?;
-
-    eprintln!(
-        "[4] Headless result length: {} | Blocked: {}",
-        html.len(),
-        html_looks_blocked(&html)
-    );
-
-    Ok(html)
-}
-
-async fn fetch_with_headless(url: &str) -> Result<String> {
-    let config = BrowserConfig::builder()
-        .chrome_executable("/usr/bin/chromium")
-        .build()
-        .map_err(|e| anyhow!(e))?;
-
-    let (browser, mut handler) = chromiumoxide::browser::Browser::launch(config).await?;
-
-    tokio::spawn(async move { while let Some(_event) = handler.next().await {} });
-
-    let page = browser.new_page(url).await?;
-    tokio::time::sleep(Duration::from_secs(3)).await;
-
-    let html = page.content().await?;
-
+    let html = headless::fetch(url).await?;
     Ok(html)
 }
 
@@ -148,4 +40,40 @@ pub async fn parse_article_from_url(url: &str) -> Result<HtmlArticle> {
         html_content: article.content,
         title: article.title,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{routing::get, Router};
+    use std::net::SocketAddr;
+    use tokio::net::TcpListener;
+
+    async fn start_mock_server() -> (SocketAddr, tokio::task::JoinHandle<()>) {
+        let app = Router::new()
+            .route("/", get(|| async { "<html><head><title>Test Title</title></head><body>" .to_string() + &"a".repeat(11000) + "</body></html>" }));
+
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        let handle = tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+
+        (addr, handle)
+    }
+
+    #[tokio::test]
+    async fn test_parse_article_from_url() {
+        let (addr, handle) = start_mock_server().await;
+        let url = format!("http://{}", addr);
+
+        let result = parse_article_from_url(&url).await;
+        assert!(result.is_ok());
+        let article = result.unwrap();
+        assert_eq!(article.title, "Test Title");
+        assert!(article.html_content.len() > 0);
+
+        handle.abort();
+    }
 }

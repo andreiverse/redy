@@ -7,6 +7,7 @@ mod dto;
 use axum::{Router, routing::get};
 use sea_orm::{Database, DatabaseConnection};
 use std::net::SocketAddr;
+use tower_http::cors::CorsLayer;
 
 use crate::controller::{reader_controller::reader_get, rss_feed_controller::{rss_feed_get, rss_feed_get_by_uuid}};
 
@@ -20,12 +21,15 @@ async fn main() -> Result<(), anyhow::Error> {
     let db: DatabaseConnection =
         Database::connect("postgres://user:password@localhost:5432/my_app_db").await?;
 
+    let cors = CorsLayer::permissive();
+
     let state = AppState { db };
 
     let app = Router::new()
         .route("/reader", get(reader_get))
         .route("/rss_feed", get(rss_feed_get))
         .route("/rss_feed/:rss_feed_uuid", get(rss_feed_get_by_uuid))
+        .layer(cors)
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
