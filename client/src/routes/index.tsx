@@ -22,7 +22,7 @@ function App() {
       <Button onClick={fetchArtcile}>Fetch</Button>
 
       <div>
-        <div className='text-justify' dangerouslySetInnerHTML={{ __html: article }} />
+        <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: article }} />
       </div>
       
     </>

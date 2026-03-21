@@ -345,3 +345,130 @@ a {
     color: var(--foreground);
   }
 }
+
+/* Base (light mode) */
+.news-content {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+/* Paragraphs */
+.news-content p {
+  margin: 1em 0;
+  font-size: 16px;
+}
+
+/* Meta */
+.news-content time,
+.news-content span {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Links */
+.news-content a {
+  color: #0a66c2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.news-content a:hover {
+  text-decoration: underline;
+}
+
+/* Images */
+.news-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Author avatar */
+.news-content p:first-child img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Layout */
+.news-content article {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Text styles */
+.news-content em {
+  font-style: italic;
+  color: #333;
+}
+
+.news-content strong {
+  font-weight: 600;
+}
+
+/* Sections */
+.news-content section {
+  margin: 24px 0;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 10px;
+}
+
+/* Forms */
+.news-content form {
+  display: flex;
+  justify-content: center;
+}
+
+/* Spacing */
+.news-content div {
+  margin-bottom: 8px;
+}
+
+.news-content [data-testid="article-body"] {
+  margin-top: 16px;
+}
+
+.news-content span:empty {
+  display: none;
+}
+
+/* ===================== */
+/* DARK MODE OVERRIDES   */
+/* ===================== */
+
+.dark .news-content {
+  color: #e5e7eb; /* light gray */
+}
+
+/* Meta */
+.dark .news-content time,
+.dark .news-content span {
+  color: #9ca3af;
+}
+
+/* Links */
+.dark .news-content a {
+  color: #60a5fa;
+}
+
+.dark .news-content a:hover {
+  color: #93c5fd;
+}
+
+/* Emphasis */
+.dark .news-content em {
+  color: #d1d5db;
+}
+
+/* Sections */
+.dark .news-content section {
+  background: #1f2937;
+}
+
+/* Optional: subtle image dim for dark mode */
+.dark .news-content img {
+  opacity: 0.95;
+}
