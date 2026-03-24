@@ -6,10 +6,11 @@ mod dto;
 
 use axum::{Router, routing::get};
 use sea_orm::{Database, DatabaseConnection};
+use utoipa_swagger_ui::SwaggerUi;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
-use crate::controller::{reader_controller::reader_get, rss_feed_controller::{rss_feed_get, rss_feed_get_by_uuid}};
+use crate::controller::{reader_controller::reader_get, rss_feed_controller};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -21,15 +22,18 @@ async fn main() -> Result<(), anyhow::Error> {
     let db: DatabaseConnection =
         Database::connect("postgres://user:password@localhost:5432/my_app_db").await?;
 
+    let (router, mut api) = controller::create_controller().split_for_parts();
+
     let cors = CorsLayer::permissive();
 
     let state = AppState { db };
 
     let app = Router::new()
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api))
         .route("/reader", get(reader_get))
-        .route("/rss_feed", get(rss_feed_get))
-        .route("/rss_feed/:rss_feed_uuid", get(rss_feed_get_by_uuid))
+        .merge(router)
         .layer(cors)
+        
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
