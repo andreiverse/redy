@@ -30,7 +30,6 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let app = Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api))
-        .route("/reader", get(reader_get))
         .merge(router)
         .layer(cors)
         
