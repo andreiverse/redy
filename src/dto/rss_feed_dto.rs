@@ -1,8 +1,6 @@
 use sea_orm::prelude::Uuid;
 use serde::Serialize;
-use utoipa::{IntoParams, OpenApi, ToSchema};
-use utoipa_axum::{router::OpenApiRouter, routes};
-use utoipa_swagger_ui::SwaggerUi;
+use utoipa::ToSchema;
 
 use crate::entities::rss_feed;
 

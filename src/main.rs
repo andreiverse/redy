@@ -10,7 +10,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
-use crate::controller::{reader_controller::reader_get, rss_feed_controller};
+use crate::controller::reader_controller::reader_get;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,7 +22,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let db: DatabaseConnection =
         Database::connect("postgres://user:password@localhost:5432/my_app_db").await?;
 
-    let (router, mut api) = controller::create_controller().split_for_parts();
+    let (router, api) = controller::create_controller().split_for_parts();
 
     let cors = CorsLayer::permissive();
 
