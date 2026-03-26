@@ -1,4 +1,4 @@
-use axum::response::{IntoResponse, Response, sse};
+use axum::response::{IntoResponse, Response};
 use tower_sessions::Session;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
