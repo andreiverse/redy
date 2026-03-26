@@ -5,12 +5,11 @@ mod entities;
 mod service;
 
 use axum::{
-    Router, error_handling::HandleErrorLayer, http::Uri, response::IntoResponse, routing::get,
+    http::Uri, response::IntoResponse,
 };
 use sea_orm::{Database, DatabaseConnection};
 use utoipa_axum::router::OpenApiRouter;
 use std::net::SocketAddr;
-use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tower_sessions::{
     Expiry, MemoryStore, SessionManagerLayer,
@@ -20,11 +19,8 @@ use tracing::Level;
 use utoipa_swagger_ui::SwaggerUi;
 
 use axum_oidc::{
-    EmptyAdditionalClaims, OidcAuthLayer, OidcClaims, OidcClient, OidcLoginLayer,
+    EmptyAdditionalClaims, OidcClaims,
     OidcRpInitiatedLogout,
-    error::MiddlewareError,
-    handle_oidc_redirect,
-    openidconnect::{Audience, ClientId, ClientSecret, IssuerUrl, Scope},
 };
 
 #[derive(Clone)]
@@ -42,7 +38,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let db: DatabaseConnection =
         Database::connect("postgres://user:password@localhost:5432/my_app_db").await?;
 
-    let (router, api) = controller::create_controller().split_for_parts();
+    let (_router, _api) = controller::create_controller().split_for_parts();
 
     let cors = CorsLayer::permissive();
 
@@ -72,25 +68,4 @@ async fn main() -> Result<(), anyhow::Error> {
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
-}
-
-async fn authenticated(claims: OidcClaims<EmptyAdditionalClaims>) -> impl IntoResponse {
-    format!("Hello {}", claims.subject().as_str())
-}
-
-async fn maybe_authenticated(
-    claims: Result<OidcClaims<EmptyAdditionalClaims>, axum_oidc::error::ExtractorError>,
-) -> impl IntoResponse {
-    if let Ok(claims) = claims {
-        format!(
-            "Hello {}! You are already logged in from another Handler.",
-            claims.subject().as_str()
-        )
-    } else {
-        "Hello anon!".to_string()
-    }
-}
-
-async fn logout(logout: OidcRpInitiatedLogout) -> impl IntoResponse {
-    logout.with_post_logout_redirect(Uri::from_static("https://example.com"))
 }
