@@ -1,10 +1,11 @@
 use anyhow::{Result, anyhow};
 use legible::parse;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::service::article_fetcher::{normal, googlebot, amp, headless};
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct HtmlArticle {
     pub html_content: String,
     pub title: String,

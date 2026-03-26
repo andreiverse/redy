@@ -2,7 +2,7 @@ use axum::{Json, extract::Query, response::{IntoResponse, Response}};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
-use crate::{AppState, api::error::AppError, service::article_parser_service::parse_article_from_url};
+use crate::{AppState, api::error::AppError, service::article_parser_service::{HtmlArticle, parse_article_from_url}};
 
 #[derive(Deserialize, IntoParams)]
 pub struct ReaderGetParams {
@@ -13,7 +13,10 @@ pub struct ReaderGetParams {
     get,
     path = "/",
     params(ReaderGetParams),
-    tag = "reader"
+    tag = "reader",
+    responses(
+        (status=200, body=HtmlArticle)
+    )
 )]
 pub async fn reader_get(Query(params): Query<ReaderGetParams>) -> Response {
     match parse_article_from_url(&params.url).await {

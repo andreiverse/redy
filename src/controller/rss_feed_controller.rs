@@ -9,7 +9,10 @@ use uuid::Uuid;
 #[utoipa::path(
     get,
     path = "/",
-    tag = "rss_feed"
+    tag = "rss_feed",
+    responses(
+        (status=200, body=Vec<RssFeedDto>)
+    )
 )]
 pub async fn rss_feed_get(State(state): State<AppState>) -> Json<Vec<RssFeedDto>> {
     let feeds = rss_feed::Entity::find().all(&state.db).await.unwrap();
@@ -21,7 +24,10 @@ pub async fn rss_feed_get(State(state): State<AppState>) -> Json<Vec<RssFeedDto>
 #[utoipa::path(
     get,
     path = "/{rss_feed_uuid}",
-    tag = "rss_feed"
+    tag = "rss_feed",
+    responses(
+        (status=200, body=RssFeedDto)
+    )
 )]
 pub async fn rss_feed_get_by_uuid(
     State(state): State<AppState>,
