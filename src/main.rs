@@ -52,7 +52,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let api_router = controller::create_controller();
 
     let full_router = OpenApiRouter::new()
-        .merge(api_router) // merge while still OpenApiRouter
+        .merge(api_router) 
         .layer(session_layer)
         .layer(cors);
 
