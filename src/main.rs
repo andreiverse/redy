@@ -4,9 +4,6 @@ mod dto;
 mod entities;
 mod service;
 
-use axum::{
-    http::Uri, response::IntoResponse,
-};
 use sea_orm::{Database, DatabaseConnection};
 use utoipa_axum::router::OpenApiRouter;
 use std::net::SocketAddr;
@@ -18,10 +15,6 @@ use tower_sessions::{
 use tracing::Level;
 use utoipa_swagger_ui::SwaggerUi;
 
-use axum_oidc::{
-    EmptyAdditionalClaims, OidcClaims,
-    OidcRpInitiatedLogout,
-};
 
 #[derive(Clone)]
 pub struct AppState {

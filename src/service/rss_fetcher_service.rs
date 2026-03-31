@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use reqwest::Client;
-use sea_orm::sea_query::prelude::serde_json::to_string;
 use serde::Serialize;
 use utoipa::ToSchema;
 
