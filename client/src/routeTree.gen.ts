@@ -9,12 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as ReaderRouteImport } from './routes/reader'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeedFeedUuidRouteImport } from './routes/feed/$feedUuid'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const ReaderRoute = ReaderRouteImport.update({
+  id: '/reader',
+  path: '/reader',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +23,49 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedFeedUuidRoute = FeedFeedUuidRouteImport.update({
+  id: '/feed/$feedUuid',
+  path: '/feed/$feedUuid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/reader': typeof ReaderRoute
+  '/feed/$feedUuid': typeof FeedFeedUuidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/reader': typeof ReaderRoute
+  '/feed/$feedUuid': typeof FeedFeedUuidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/reader': typeof ReaderRoute
+  '/feed/$feedUuid': typeof FeedFeedUuidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths: '/' | '/reader' | '/feed/$feedUuid'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/' | '/reader' | '/feed/$feedUuid'
+  id: '__root__' | '/' | '/reader' | '/feed/$feedUuid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  ReaderRoute: typeof ReaderRoute
+  FeedFeedUuidRoute: typeof FeedFeedUuidRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/reader': {
+      id: '/reader'
+      path: '/reader'
+      fullPath: '/reader'
+      preLoaderRoute: typeof ReaderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed/$feedUuid': {
+      id: '/feed/$feedUuid'
+      path: '/feed/$feedUuid'
+      fullPath: '/feed/$feedUuid'
+      preLoaderRoute: typeof FeedFeedUuidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  ReaderRoute: ReaderRoute,
+  FeedFeedUuidRoute: FeedFeedUuidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

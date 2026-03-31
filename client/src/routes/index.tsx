@@ -1,3 +1,4 @@
+import { FeedList } from '#/components/rss/FeedList';
 import { Button } from '#/components/ui/button';
 import { Input } from '#/components/ui/input';
 import { createFileRoute } from '@tanstack/react-router'
@@ -18,6 +19,8 @@ function App() {
 
   return (
     <>
+      <FeedList />
+
       <Input value={url} onChange={(e) => setUrl(e.target.value)} />
       <Button onClick={fetchArtcile}>Fetch</Button>
 
