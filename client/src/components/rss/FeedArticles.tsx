@@ -31,13 +31,17 @@ export function FeedArticleList({ rssFeedUuid }: { rssFeedUuid: string }) {
     }
 
     if (feedsQuery.isError || !feedsQuery.isSuccess) {
-        return <>Error: {feedsQuery.error}</>;   
+        return <>Error: {feedsQuery.error}</>;
     }
+
+    const sorted = [...feedsQuery.data].sort(
+        (a, b) => new Date(b.published_at ?? Date.now()).getTime() - new Date(a.published_at ?? Date.now()).getTime()
+    );
 
     return <>
         <div className="space-y-2">
             {
-                feedsQuery.data.map(article => <ArticleCard key={article.title} article={article} />)
+                sorted.map(article => <ArticleCard key={article.link} article={article} />)
             }
         </div>
     </>;

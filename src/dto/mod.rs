@@ -1,1 +1,2 @@
-pub mod rss_feed_dto;
+pub mod feed_dto;
+pub mod article_dto;

@@ -31,7 +31,7 @@ export function FeedList() {
     return <>
         <div>
             {
-                feedsQuery.data.map(feed => <RssFeedCard feed={feed} />)
+                feedsQuery.data.map(feed => <RssFeedCard key={feed.id} feed={feed} />)
             }
         </div>
     </>;
