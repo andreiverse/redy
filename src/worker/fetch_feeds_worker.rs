@@ -1,8 +1,11 @@
+use async_nats::jetstream::{self, context::PublishAckFuture};
 use chrono::{Duration, Utc};
+use reqwest::Url;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, ExprTrait, QueryFilter, Set
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, ExprTrait, QueryFilter,
+    Set, TryIntoModel,
 };
-use std::result::Result::Ok;
+use std::{result::Result::Ok, str::FromStr};
 use tracing::{error, info};
 
 use crate::{
@@ -10,7 +13,10 @@ use crate::{
     service::rss_fetcher_service,
 };
 
-pub async fn fetch_feeds_task(db: &DatabaseConnection) -> Result<(), anyhow::Error> {
+pub async fn fetch_feeds_task(
+    db: &DatabaseConnection,
+    jetstream_context: &jetstream::Context,
+) -> Result<(), anyhow::Error> {
     info!("Running fetch feeds task");
 
     // Only get feeds that haven't been fetched in the last minute (or never)
@@ -35,8 +41,7 @@ pub async fn fetch_feeds_task(db: &DatabaseConnection) -> Result<(), anyhow::Err
             continue;
         }
 
-        // We spawn or await here. Awaiting is safer for strict rate limiting.
-        if let Err(e) = handle_feed(db, &feed).await {
+        if let Err(e) = handle_feed(db, jetstream_context, &feed).await {
             error!("Error processing feed {}: {:?}", feed.url, e);
         }
     }
@@ -44,14 +49,21 @@ pub async fn fetch_feeds_task(db: &DatabaseConnection) -> Result<(), anyhow::Err
     Ok(())
 }
 
-pub async fn handle_feed(db: &DatabaseConnection, feed: &feed::Model) -> Result<(), anyhow::Error> {
+pub async fn handle_feed(
+    db: &DatabaseConnection,
+    jetstream_context: &jetstream::Context,
+    feed: &feed::Model,
+) -> Result<(), anyhow::Error> {
     info!("Fetching RSS for: {}", feed.url);
 
     let articles = rss_fetcher_service::rss_fetch(feed).await?;
 
     for new_article in articles {
+        // We clone here because SeaORM's ActiveModel consumes the value on insert
+        let article_active = new_article.clone();
+
         // "Insert-and-Queue"
-        let result = article::Entity::insert(new_article)
+        let result = article::Entity::insert(article_active)
             .on_conflict(
                 sea_orm::sea_query::OnConflict::column(article::Column::ContentHash)
                     .do_nothing()
@@ -62,11 +74,31 @@ pub async fn handle_feed(db: &DatabaseConnection, feed: &feed::Model) -> Result<
 
         match result {
             Err(DbErr::RecordNotInserted) => {
-                // This is fine! It just means the article already exists.
-                // We can ignore this "error".
+                // Article already exists in DB, so we don't need to queue it again
             }
-            Ok(_) => info!("New article discovered and saved."),
-            Err(e) => error!("Failed to save article: {:?}", e),
+            Ok(_) => {
+                // Convert the ActiveModel back to a Model to access fields safely
+                let model = new_article.try_into_model().unwrap();
+                let url_str = &model.link;
+
+                if let Ok(url) = Url::parse(url_str) {
+                    let host = url.host_str().unwrap_or("unknown").replace('.', "_");
+                    let subject = format!("tasks.scrape.{}", host);
+
+                    info!(
+                        "New article discovered: {}. Queueing in subject: {}",
+                        url_str, subject
+                    );
+
+                    // Serialize your payload (e.g., as JSON or just the URL string)
+                    let payload = url_str.as_bytes().to_vec();
+                    let js_res = jetstream_context.publish(subject, payload.into()).await;
+                    if let Err(e) = js_res {
+                        error!("NATS publish failed for article {}: {:?}", model.id, e);
+                    }
+                }
+            }
+            Err(e) => error!("Failed to save article to DB: {:?}", e),
         }
     }
 
