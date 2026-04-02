@@ -17,7 +17,7 @@ pub struct ArticleDto {
     pub status: ArticleStatusDto,
     pub published_at: Option<DateTime<chrono::FixedOffset>>,
     pub fetched_at: DateTime<chrono::FixedOffset>,
-    pub content_has: String,
+    pub content_hash: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -45,7 +45,7 @@ impl From<ArticleModel> for ArticleDto {
         Self {
             id: m.id,
             feed_id: m.feed_id,
-            content_has: m.content_hash,
+            content_hash: m.content_hash,
             title: m.title,
             feed_description: m.feed_description,
             link: m.link,
