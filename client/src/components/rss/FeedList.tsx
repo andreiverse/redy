@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle } from "../ui/card";
 export function RssFeedCard({
     feed
 }: {
-    feed: components["schemas"]["RssFeedDto"]
+    feed: components["schemas"]["FeedDto"]
 }) {
     return <>
         <Card>
@@ -18,7 +18,7 @@ export function RssFeedCard({
 }
 
 export function FeedList() {
-    const feedsQuery = $api.useQuery("get", "/rss_feed");
+    const feedsQuery = $api.useQuery("get", "/feed");
 
     if (feedsQuery.isLoading) {
         return <>Loading...</>;

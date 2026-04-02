@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["feed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/feed/{feed_uuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["feed_get_by_uuid"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/feed/{feed_uuid}/fetch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["feed_fetch_by_uuid"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reader": {
         parameters: {
             query?: never;
@@ -12,54 +60,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["reader_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rss_feed": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["rss_feed_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rss_feed/{rss_feed_uuid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["rss_feed_get_by_uuid"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/rss_feed/{rss_feed_uuid}/fetch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["rss_feed_fetch_by_uuid"];
         put?: never;
         post?: never;
         delete?: never;
@@ -88,23 +88,34 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        HtmlArticle: {
-            html_content: string;
+        ArticleDto: {
+            contentHas: string;
+            feedDescription?: string | null;
+            /** Format: uuid */
+            feedId: string;
+            /** Format: date-time */
+            fetchedAt: string;
+            htmlContent?: string | null;
+            /** Format: uuid */
+            id: string;
+            link: string;
+            /** Format: date-time */
+            publishedAt?: string | null;
+            status: components["schemas"]["ArticleStatusDto"];
             title: string;
         };
-        RssFeedDto: {
+        /** @enum {string} */
+        ArticleStatusDto: "pending" | "extracted" | "extractionFailed" | "done";
+        FeedDto: {
+            /** Format: date-time */
+            created_at: string;
+            feed_type: string;
             /** Format: uuid */
             id: string;
             url: string;
         };
-        RssNews: {
-            author?: string | null;
-            description?: string | null;
-            guid?: string | null;
-            link: string;
-            /** Format: date-time */
-            published_at?: string | null;
-            published_at_raw?: string | null;
+        HtmlArticle: {
+            html_content: string;
             title: string;
         };
     };
@@ -116,6 +127,67 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    feed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto"][];
+                };
+            };
+        };
+    };
+    feed_get_by_uuid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto"];
+                };
+            };
+        };
+    };
+    feed_fetch_by_uuid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDto"][];
+                };
+            };
+        };
+    };
     reader_get: {
         parameters: {
             query: {
@@ -133,67 +205,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HtmlArticle"];
-                };
-            };
-        };
-    };
-    rss_feed_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RssFeedDto"][];
-                };
-            };
-        };
-    };
-    rss_feed_get_by_uuid: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                rss_feed_uuid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RssFeedDto"];
-                };
-            };
-        };
-    };
-    rss_feed_fetch_by_uuid: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                rss_feed_uuid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RssNews"][];
                 };
             };
         };

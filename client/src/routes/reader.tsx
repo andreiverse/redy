@@ -1,17 +1,23 @@
 import { $api } from '#/lib/api'
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import { z } from "zod";
+
+const searchSchema = z.object({
+  url: z.string(),
+})
 
 export const Route = createFileRoute('/reader')({
   component: RouteComponent,
+  validateSearch: searchSchema
 })
 
 function RouteComponent() {
-  const search = Route.useSearch()
+  const { url } = Route.useSearch();
 
   const articleQuery = $api.useQuery("get", "/reader", {
     params: {
       query: {
-        url: search.url
+        url
       }
     }
   })
