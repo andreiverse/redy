@@ -13,6 +13,7 @@ pub struct Model {
     pub url: String,
     pub feed_type: FeedType,
     pub created_at: DateTimeWithTimeZone,
+    pub last_fetch: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -9,8 +9,10 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20260310_212653_create_rss_feed_table::Migration),
             Box::new(m20260401_184207_add_articles::Migration),
+            Box::new(m20260402_185613_add_last_fetch_for_feeds::Migration),
         ]
     }
 }
 mod m20260310_212653_create_rss_feed_table;
 mod m20260401_184207_add_articles;
+mod m20260402_185613_add_last_fetch_for_feeds;

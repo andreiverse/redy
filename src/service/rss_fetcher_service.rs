@@ -16,14 +16,14 @@ fn hash_link(link: &str) -> String {
         .collect()
 }
 
-pub async fn rss_fetch(feed: feed::Model) -> anyhow::Result<Vec<ArticleActiveModel>> {
+pub async fn rss_fetch(feed: &feed::Model) -> anyhow::Result<Vec<ArticleActiveModel>> {
     let client = Client::builder()
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36")
         .http1_only()
         .timeout(Duration::from_secs(10))
         .build()?;
 
-    let body = client.get(feed.url).send().await?.text().await?;
+    let body = client.get(feed.url.clone()).send().await?.text().await?;
     let channel = rss::Channel::read_from(body.as_bytes())?;
     let now = chrono::Utc::now().fixed_offset();
 

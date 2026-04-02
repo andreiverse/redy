@@ -65,7 +65,7 @@ pub async fn feed_fetch_by_uuid(
     match feed.feed_type {
         crate::entities::sea_orm_active_enums::FeedType::Rss => {
             return Json(
-                rss_fetch(feed)
+                rss_fetch(&feed)
                     .await
                     .unwrap()
                     .iter()

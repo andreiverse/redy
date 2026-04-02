@@ -3,18 +3,22 @@ mod controller;
 mod dto;
 mod entities;
 mod service;
+mod worker;
 
+use chrono::Utc;
 use sea_orm::{Database, DatabaseConnection};
-use utoipa_axum::router::OpenApiRouter;
-use std::net::SocketAddr;
+use tokio::time::interval;
+use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tower_sessions::{
     Expiry, MemoryStore, SessionManagerLayer,
-    cookie::{SameSite, time::Duration},
+    cookie,
 };
-use tracing::Level;
+use tracing::{Level, info};
+use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
+use crate::worker::fetch_feeds_worker::{self, fetch_feeds_task};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -24,7 +28,7 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::fmt()
-        .with_file(true)
+        .with_file(false)
         .with_line_number(true)
         .with_max_level(Level::INFO)
         .init();
@@ -35,17 +39,32 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let cors = CorsLayer::permissive();
 
+    let db_for_worker = db.clone();
+    tokio::spawn(async move {
+        let mut ticker = interval(Duration::from_secs(10));
+
+        loop {
+            ticker.tick().await;
+            println!("Checking for articles to fetch at {}", Utc::now());
+
+            // Call your logic here
+            if let Err(e) = fetch_feeds_task(&db_for_worker).await {
+                eprintln!("Fetcher error: {:?}", e);
+            }
+        }
+    });
+
     let state = AppState { db };
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
-        .with_same_site(SameSite::Lax)
-        .with_expiry(Expiry::OnInactivity(Duration::seconds(120)));
+        .with_same_site(cookie::SameSite::Lax)
+        .with_expiry(Expiry::OnInactivity(cookie::time::Duration::seconds(120)));
     let api_router = controller::create_controller();
 
     let full_router = OpenApiRouter::new()
-        .merge(api_router) 
+        .merge(api_router)
         .layer(session_layer)
         .layer(cors);
 
@@ -57,7 +76,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    println!("Listening on http://{}", addr);
+    info!("Listening on http://{}", addr);
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
