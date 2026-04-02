@@ -2,6 +2,7 @@ use crate::dto::article_dto::ArticleDto;
 use crate::entities::feed;
 use crate::service::rss_fetcher_service::{rss_fetch};
 use crate::{AppState, dto::feed_dto::FeedDto, entities::rss_feed};
+use apalis::prelude::TaskSink;
 use axum::extract::Path;
 use axum::{Json, extract::State};
 use sea_orm::{EntityTrait, TryIntoModel};
@@ -64,16 +65,15 @@ pub async fn feed_fetch_by_uuid(
 
     match feed.feed_type {
         crate::entities::sea_orm_active_enums::FeedType::Rss => {
-            return Json(
-                rss_fetch(feed)
+            let news: Vec<ArticleDto> = rss_fetch(feed)
                     .await
                     .unwrap()
                     .iter()
                     // todo: check if clone is avoidable
                     .map(|f| f.clone().try_into_model().unwrap())
                     .map(ArticleDto::from)
-                    .collect(),
-            );
+                    .collect();
+           return Json(news);
         }
     }
 }

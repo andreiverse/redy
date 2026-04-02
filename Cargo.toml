@@ -15,7 +15,7 @@ chromiumoxide = "0.9.1"
 axum = { version = "0.8", features = ["json"] }
 axum-oidc = { git = "https://codeberg.org/pfzetto/axum-oidc", rev = "f698c462" }
 tower-sessions = "0.15"
-tower = "0.4"
+tower = { version = "0.4", features = ["limit"] }
 serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0.102"
 lazy_static = "1.5.0"
@@ -34,3 +34,7 @@ tracing-subscriber = "0.3.23"
 rss = "2.0"
 chrono = { version = "0.4.44", features = ["serde"] }
 sha2 = "0.11.0"
+apalis = { version = "1.0.0-rc.7", features = ["timeout"] }
+apalis-postgres = { version = "1.0.0-rc.6", default-features = false, features = ["migrate", "tokio-comp-native-tls", "time"] }
+apalis-board = { version = "1.0.0-rc.6", features = ["axum"] }
+apalis-cron = "1.0.0-rc.6"
