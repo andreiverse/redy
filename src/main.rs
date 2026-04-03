@@ -36,7 +36,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .init();
     let mut opt = ConnectOptions::new("postgres://user:password@localhost:5432/my_app_db");
 
-    opt.sqlx_logging(false);
+    opt.sqlx_slow_statements_logging_settings(tracing_log::log::LevelFilter::Warn, Duration::from_secs(2));
+    opt.sqlx_logging_level(tracing_log::log::LevelFilter::Debug);
 
     let db = Database::connect(opt).await?;
     let nats_url = "nats://localhost:4222";

@@ -83,7 +83,18 @@ pub async fn scrape_article_worker(
 
         match handle_article(db, article_uuid).await {
             Ok(HandleResult::Success) => {
-                msg.ack().await.ok();
+                if let Err(e) = jetstream_context
+                    .publish("tasks.ml.sentimental-analysis", msg.payload.clone())
+                    .await
+                {
+                    error!("Couldn't publish task tasks.ml.sentimental-analysis, naking with 30 minutes: {}", e);
+
+                    msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(30))))
+                        .await
+                        .ok();
+                } else {
+                    msg.ack().await.ok();
+                }
             }
 
             Ok(HandleResult::NotFound) => {
@@ -92,7 +103,7 @@ pub async fn scrape_article_worker(
             }
 
             Err(err) => {
-                error!("Processing failed: {}, retrying later", err);
+                error!("Processing failed: {}, retrying later in 10 minutes", err);
 
                 msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(10))))
                     .await
