@@ -1,11 +1,8 @@
 use std::time::Duration;
 
-use async_nats::{
-    jetstream::{self, stream},
-    service::error,
-};
+use async_nats::jetstream::{self, stream};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel,
+    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrait, IntoActiveModel,
 };
 use tokio_stream::StreamExt;
 use tracing::{error, info};
@@ -81,7 +78,7 @@ pub async fn scrape_article_worker(
         info!(
             "Received: {:?} on {}",
             article_uuid,
-            String::from_utf8_lossy(&msg.subject.as_bytes())
+            String::from_utf8_lossy(msg.subject.as_bytes())
         );
 
         match handle_article(db, article_uuid).await {

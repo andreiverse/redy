@@ -1,9 +1,9 @@
 use chrono::FixedOffset;
-use sea_orm::{ActiveEnum, prelude::{ChronoDateTimeWithTimeZone, Uuid}};
-use serde::{Deserialize, Serialize};
+use sea_orm::{ActiveEnum, prelude::Uuid};
+use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::entities::{feed, rss_feed, sea_orm_active_enums::FeedType};
+use crate::entities::feed;
 
 #[derive(Serialize, ToSchema)]
 pub struct FeedDto {

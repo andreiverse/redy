@@ -1,11 +1,11 @@
-use async_nats::jetstream::{self, context::PublishAckFuture};
+use async_nats::jetstream::{self};
 use chrono::{Duration, Utc};
 use reqwest::Url;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, ExprTrait, QueryFilter,
     Set, TryIntoModel,
 };
-use std::{result::Result::Ok, str::FromStr};
+use std::result::Result::Ok;
 use tracing::{error, info};
 
 use crate::{

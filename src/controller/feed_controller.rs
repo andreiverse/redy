@@ -1,7 +1,7 @@
 use crate::dto::article_dto::ArticleDto;
 use crate::entities::feed;
 use crate::service::rss_fetcher_service::{rss_fetch};
-use crate::{AppState, dto::feed_dto::FeedDto, entities::rss_feed};
+use crate::{AppState, dto::feed_dto::FeedDto};
 use axum::extract::Path;
 use axum::{Json, extract::State};
 use sea_orm::{EntityTrait, TryIntoModel};

@@ -6,7 +6,6 @@ mod service;
 mod worker;
 
 use async_nats::jetstream;
-use chrono::Utc;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tracing_subscriber::EnvFilter;
 use std::{net::SocketAddr, time::Duration};
@@ -19,7 +18,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 use crate::scrape_article_worker::scrape_article_worker;
 use crate::worker::{
-    fetch_feeds_worker::{self, fetch_feeds_task},
+    fetch_feeds_worker::fetch_feeds_task,
     scrape_article_worker,
 };
 
