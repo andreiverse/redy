@@ -1,4 +1,4 @@
-use sea_orm_migration::{prelude::*, schema::*, sea_query::Iden};
+use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -26,6 +26,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
+#[allow(dead_code)]
 enum RssFeed {
     Table,
     Id,

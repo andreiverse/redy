@@ -3611,6 +3611,7 @@ dependencies = [
  "tower-http",
  "tower-sessions 0.15.0",
  "tracing",
+ "tracing-log",
  "tracing-subscriber",
  "utoipa",
  "utoipa-axum",

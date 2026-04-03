@@ -212,6 +212,7 @@ enum ArticleData {
 
 // enum type identifiers
 #[derive(DeriveIden)]
+#[allow(dead_code)]
 enum FeedType {
     #[sea_orm(iden = "feed_type")]
     Type,

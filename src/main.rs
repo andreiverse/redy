@@ -7,20 +7,17 @@ mod worker;
 
 use async_nats::jetstream;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use tracing_subscriber::EnvFilter;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::interval;
 use tower_http::cors::CorsLayer;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer, cookie};
 use tracing::{Level, info};
+use tracing_subscriber::EnvFilter;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::scrape_article_worker::scrape_article_worker;
-use crate::worker::{
-    fetch_feeds_worker::fetch_feeds_task,
-    scrape_article_worker,
-};
+use crate::worker::{fetch_feeds_worker::fetch_feeds_task, scrape_article_worker};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -29,15 +26,17 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    // LogTracer::init()?;
+    
     tracing_subscriber::fmt()
         .with_file(false)
         .with_line_number(true)
-        .with_env_filter(EnvFilter::new("html5ever=error,info")) 
+        .with_env_filter(EnvFilter::new("html5ever=off,info"))
         .with_max_level(Level::INFO)
         .init();
     let mut opt = ConnectOptions::new("postgres://user:password@localhost:5432/my_app_db");
 
-    opt.sqlx_logging(false); 
+    opt.sqlx_logging(false);
 
     let db = Database::connect(opt).await?;
     let nats_url = "nats://localhost:4222";
