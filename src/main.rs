@@ -7,7 +7,8 @@ mod worker;
 
 use async_nats::jetstream;
 use chrono::Utc;
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use tracing_subscriber::EnvFilter;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::interval;
 use tower_http::cors::CorsLayer;
@@ -32,11 +33,14 @@ async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::fmt()
         .with_file(false)
         .with_line_number(true)
+        .with_env_filter(EnvFilter::new("html5ever=error,info")) 
         .with_max_level(Level::INFO)
         .init();
-    let db: DatabaseConnection =
-        Database::connect("postgres://user:password@localhost:5432/my_app_db").await?;
+    let mut opt = ConnectOptions::new("postgres://user:password@localhost:5432/my_app_db");
 
+    opt.sqlx_logging(false); 
+
+    let db = Database::connect(opt).await?;
     let nats_url = "nats://localhost:4222";
     let client = async_nats::connect(nats_url).await?;
     let jetstream = jetstream::new(client);
@@ -48,23 +52,21 @@ async fn main() -> Result<(), anyhow::Error> {
     let db_for_worker = db.clone();
     let js_worker = jetstream.clone();
     tokio::spawn(async move {
-        let mut ticker = interval(Duration::from_secs(10));
-
+        let mut ticker = interval(Duration::from_mins(10));
+        info!("Fetching feed articles every 10 minutes...");
         loop {
-            println!("Checking for articles to fetch at {}", Utc::now());
-
-            // Call your logic here
+            ticker.tick().await;
             if let Err(e) = fetch_feeds_task(&db_for_worker, &js_worker).await {
                 eprintln!("Fetcher error: {:?}", e);
             }
-            ticker.tick().await;
         }
     });
 
+    let db_for_worker2 = db.clone();
     tokio::spawn(async move {
-        scrape_article_worker(&jetstream).await;
+        scrape_article_worker(&jetstream, &db_for_worker2).await;
     });
-    
+
     let state = AppState { db };
 
     let session_store = MemoryStore::default();

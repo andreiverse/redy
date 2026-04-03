@@ -1,10 +1,11 @@
 use anyhow::{Result, anyhow};
 use reqwest::Client;
+use tracing::debug;
 use std::time::Duration;
 use super::{fetch_with_client, is_content_acceptable, html_looks_blocked};
 
 pub async fn fetch(url: &str) -> Result<String> {
-    eprintln!("[1] Trying classic request");
+    debug!("[1] Trying classic request");
     let client = Client::builder()
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36")
         .http1_only()
@@ -12,7 +13,7 @@ pub async fn fetch(url: &str) -> Result<String> {
         .build()?;
 
     let (status, html) = fetch_with_client(&client, url).await?;
-    eprintln!(
+    debug!(
         "[1] Status: {} | Length: {} | Blocked: {}",
         status,
         html.len(),

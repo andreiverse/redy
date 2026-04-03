@@ -1,10 +1,11 @@
 use anyhow::{Result, anyhow};
 use reqwest::Client;
+use tracing::debug;
 use std::time::Duration;
 use super::{fetch_with_client, is_content_acceptable, html_looks_blocked};
 
 pub async fn fetch(url: &str) -> Result<String> {
-    eprintln!("[3] Trying AMP");
+    debug!("[3] Trying AMP");
     let amp_url = if url.contains('?') {
         format!("{url}&amp=1")
     } else {
@@ -18,7 +19,7 @@ pub async fn fetch(url: &str) -> Result<String> {
         .build()?;
 
     let (status, html) = fetch_with_client(&client, &amp_url).await?;
-    eprintln!(
+    debug!(
         "[3] Status: {} | Length: {} | Blocked: {}",
         status,
         html.len(),

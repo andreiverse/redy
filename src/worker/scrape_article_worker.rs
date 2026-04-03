@@ -1,11 +1,47 @@
 use std::time::Duration;
 
-use async_nats::{jetstream::{self, stream}, service::error};
-use tracing::{info, error};
+use async_nats::{
+    jetstream::{self, stream},
+    service::error,
+};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel,
+};
 use tokio_stream::StreamExt;
+use tracing::{error, info};
+use uuid::Uuid;
 
-pub async fn scrape_article_worker(jetstream_context: &jetstream::Context) {
-    // 1. Define the stream WITH subjects
+use crate::{entities::article, service::article_parser_service};
+
+pub enum HandleResult {
+    Success,
+    NotFound,
+}
+
+pub async fn handle_article(
+    db: &DatabaseConnection,
+    handle_uuid: Uuid,
+) -> Result<HandleResult, anyhow::Error> {
+    let article = match article::Entity::find_by_id(handle_uuid).one(db).await? {
+        Some(a) => a,
+        None => return Ok(HandleResult::NotFound),
+    };
+
+    let article_link = article.link.clone();
+    let mut active_article = article.into_active_model();
+
+    let html_content = article_parser_service::parse_article_from_url(&article_link).await?;
+
+    active_article.html_content = Set(Some(html_content.html_content));
+    active_article.update(db).await?;
+
+    Ok(HandleResult::Success)
+}
+
+pub async fn scrape_article_worker(
+    jetstream_context: &jetstream::Context,
+    db: &DatabaseConnection,
+) {
     let stream = jetstream_context
         .get_or_create_stream(stream::Config {
             name: "SCRAPER".to_string(),
@@ -15,12 +51,14 @@ pub async fn scrape_article_worker(jetstream_context: &jetstream::Context) {
         .await
         .expect("Should be able to create or get stream");
 
-    // // 2. Create a consumer to read those messages
     let consumer = stream
-        .get_or_create_consumer("worker", jetstream::consumer::pull::Config {
-            durable_name: Some("worker".to_string()),
-            ..Default::default()
-        })
+        .get_or_create_consumer(
+            "worker",
+            jetstream::consumer::pull::Config {
+                durable_name: Some("worker".to_string()),
+                ..Default::default()
+            },
+        )
         .await
         .expect("Should be able to create consumer");
 
@@ -29,11 +67,40 @@ pub async fn scrape_article_worker(jetstream_context: &jetstream::Context) {
     info!("Scraper worker started. Waiting for messages...");
 
     while let Some(Ok(msg)) = messages.next().await {
-        info!("Received: {:?} on {}", String::from_utf8_lossy(&msg.payload), String::from_utf8_lossy(&msg.subject.as_bytes()));
-        
-        // Use NAK for now so the message stays in the queue for testing
-        if let Err(e) = msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(10)))).await {
-            error!("failed to nak: {}", e);
+        let article_uuid = match Uuid::from_slice(&msg.payload) {
+            Ok(uuid) => uuid,
+            Err(e) => {
+                error!("Invalid UUID bytes (len={}): {}", msg.payload.len(), e);
+                if let Err(e) = msg.ack().await {
+                    error!("Failed to ack invalid message: {}", e);
+                }
+                continue; // skip processing
+            }
+        };
+
+        info!(
+            "Received: {:?} on {}",
+            article_uuid,
+            String::from_utf8_lossy(&msg.subject.as_bytes())
+        );
+
+        match handle_article(db, article_uuid).await {
+            Ok(HandleResult::Success) => {
+                msg.ack().await.ok();
+            }
+
+            Ok(HandleResult::NotFound) => {
+                error!("Article not found, dropping message: {}", article_uuid);
+                msg.ack().await.ok();
+            }
+
+            Err(err) => {
+                error!("Processing failed: {}, retrying later", err);
+
+                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(10))))
+                    .await
+                    .ok();
+            }
         }
     }
 }

@@ -30,7 +30,7 @@ futures = "0.3.32"
 uuid = { version = "1.22.0", features = ["v4"] }
 tower-http = { version = "0.6.8", features = ["cors"] }
 tracing = "0.1.44"
-tracing-subscriber = "0.3.23"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 rss = "2.0"
 chrono = { version = "0.4.44", features = ["serde"] }
 sha2 = "0.11.0"

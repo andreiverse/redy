@@ -1,11 +1,12 @@
 use anyhow::{Result, anyhow};
 use chromiumoxide::browser::BrowserConfig;
 use futures::StreamExt;
+use tracing::debug;
 use std::time::Duration;
 use super::html_looks_blocked;
 
 pub async fn fetch(url: &str) -> Result<String> {
-    eprintln!("[4] Trying headless browser");
+    debug!("[4] Trying headless browser");
     let config = BrowserConfig::builder()
         .chrome_executable("/usr/bin/chromium")
         .build()
@@ -20,7 +21,7 @@ pub async fn fetch(url: &str) -> Result<String> {
 
     let html = page.content().await?;
 
-    eprintln!(
+    debug!(
         "[4] Headless result length: {} | Blocked: {}",
         html.len(),
         html_looks_blocked(&html)

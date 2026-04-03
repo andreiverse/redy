@@ -1,6 +1,7 @@
 use anyhow::{Result, anyhow};
 use legible::parse;
 use serde::Serialize;
+use tracing::debug;
 use utoipa::ToSchema;
 
 use crate::service::article_fetcher::{normal, googlebot, amp, headless};
@@ -13,17 +14,17 @@ pub struct HtmlArticle {
 
 pub async fn get_url_contents_headless(url: &str) -> Result<String> {
     if let Ok(html) = normal::fetch(url).await {
-        eprintln!("[1] SUCCESS");
+        debug!("[1] SUCCESS");
         return Ok(html);
     }
 
     if let Ok(html) = googlebot::fetch(url).await {
-        eprintln!("[2] SUCCESS");
+        debug!("[2] SUCCESS");
         return Ok(html);
     }
 
     if let Ok(html) = amp::fetch(url).await {
-        eprintln!("[3] SUCCESS");
+        debug!("[3] SUCCESS");
         return Ok(html);
     }
 

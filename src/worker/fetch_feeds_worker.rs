@@ -17,8 +17,6 @@ pub async fn fetch_feeds_task(
     db: &DatabaseConnection,
     jetstream_context: &jetstream::Context,
 ) -> Result<(), anyhow::Error> {
-    info!("Running fetch feeds task");
-
     // Only get feeds that haven't been fetched in the last minute (or never)
     let one_minute_ago = Utc::now() - Duration::minutes(1);
 
@@ -86,12 +84,11 @@ pub async fn handle_feed(
                     let subject = format!("tasks.scrape.{}", host);
 
                     info!(
-                        "New article discovered: {}. Queueing in subject: {}",
-                        url_str, subject
+                        "New article discovered: {} ({}). Queueing in subject: {}",
+                        url_str, model.id, subject
                     );
 
-                    // Serialize your payload (e.g., as JSON or just the URL string)
-                    let payload = url_str.as_bytes().to_vec();
+                    let payload = model.id.as_bytes().to_vec();
                     let js_res = jetstream_context.publish(subject, payload.into()).await;
                     if let Err(e) = js_res {
                         error!("NATS publish failed for article {}: {:?}", model.id, e);
