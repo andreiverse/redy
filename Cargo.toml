@@ -36,3 +36,4 @@ chrono = { version = "0.4.44", features = ["serde"] }
 sha2 = "0.11.0"
 async-nats = { version = "0.47.0", features = ["jetstream", "websockets"] }
 tokio-stream = "0.1.18"
+migration = { path = "./migration"}

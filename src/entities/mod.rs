@@ -5,5 +5,4 @@ pub mod prelude;
 pub mod article;
 pub mod article_data;
 pub mod feed;
-pub mod rss_feed;
 pub mod sea_orm_active_enums;
