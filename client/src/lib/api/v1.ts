@@ -89,7 +89,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         ArticleDto: {
-            contentHas: string;
+            contentHash: string;
             feedDescription?: string | null;
             /** Format: uuid */
             feedId: string;

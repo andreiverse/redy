@@ -47,7 +47,6 @@ async def run():
         
         except Exception as e:
             print(f"Could not parse message: {e}")
-        await msg.nak(30)
 
     await js.subscribe(
         subject, 

@@ -103,9 +103,9 @@ pub async fn scrape_article_worker(
             }
 
             Err(err) => {
-                error!("Processing failed: {}, retrying later in 10 minutes", err);
+                error!("Processing failed: {}, retrying later in 24 hours", err);
 
-                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(10))))
+                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_hours(24))))
                     .await
                     .ok();
             }
