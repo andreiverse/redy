@@ -1,1 +1,11 @@
+beautifulsoup4==4.14.3
+bs4==0.0.2
+click==8.3.2
+joblib==1.5.3
 nats-py==2.14.0
+nltk==3.9.4
+psycopg2==2.9.11
+regex==2026.4.4
+soupsieve==2.8.3
+tqdm==4.67.3
+typing-extensions==4.15.0

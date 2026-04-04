@@ -3,9 +3,16 @@ import nats
 from nats.js.errors import BadRequestError
 from nats.js.api import StreamConfig
 import uuid
+import config
+import repository
+
+import sentimental_analysis_worker
+
+from config import NATS_SERVER
+import utils
 
 async def run():
-    nc = await nats.connect("nats://localhost:4222")
+    nc = await nats.connect(NATS_SERVER)
     js = nc.jetstream()
 
     stream_name = "ML"
@@ -24,7 +31,17 @@ async def run():
         try:
             if len(msg.data) == 16:
                 raw_uuid = uuid.UUID(bytes=msg.data)
+                
                 print(f"Received UUID object: {raw_uuid}")
+                
+                status = sentimental_analysis_worker.handle_sentimental_analysis(raw_uuid)
+
+                if (status == utils.Status.SUCCESS) or (status == utils.Status.INVALID):
+                    print("acking message")
+                    await msg.ack()
+                else:
+                    print("sending nak with delay")
+                    await msg.nak(config.TIMEOUT_ON_FAIL_SECONDS)
             else:
                 print(f"Received non-UUID data (length {len(msg.data)}): {msg.data}")
         
@@ -35,7 +52,7 @@ async def run():
     await js.subscribe(
         subject, 
         cb=message_handler, 
-        durable="sentiment-debugger"
+        durable="sentimental-analysis-worker"
     )
     
     print(f"Listening on {subject}...")

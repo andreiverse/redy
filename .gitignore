@@ -1,4 +1,6 @@
 /target
+/server/target
 /migration/target
 exploratory
 .venv
+__pycache__

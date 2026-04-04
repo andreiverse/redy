@@ -3,26 +3,20 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "article_data")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(unique)]
-    pub article_id: Uuid,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub summary: Option<String>,
-    pub sentiment: Option<String>,
-    pub language: Option<String>,
-    pub keywords: Option<Vec<String>>,
-    pub processed_at: Option<DateTimeWithTimeZone>,
+    #[sea_orm(column_type = "Double", nullable)]
+    pub sentiment_score: Option<f64>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::article::Entity",
-        from = "Column::ArticleId",
+        from = "Column::Id",
         to = "super::article::Column::Id",
         on_update = "NoAction",
         on_delete = "Cascade"
