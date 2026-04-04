@@ -2,11 +2,9 @@ use async_nats::jetstream;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use tracing::log::error;
 
-use crate::{
-    dto::article_dto::ArticleDto,
-    entities::{article, article_data},
-};
+use crate::entities::{article, article_data};
 
+#[allow(dead_code)]
 pub async fn calculate_sentimental_analysis_on_missing(
     db: &DatabaseConnection,
     js: &jetstream::Context,

@@ -17,7 +17,6 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::scrape_article_worker::scrape_article_worker;
-use crate::service::worker_service::calculate_sentimental_analysis_on_missing;
 use crate::worker::{fetch_feeds_worker::fetch_feeds_task, scrape_article_worker};
 
 #[derive(Clone)]

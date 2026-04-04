@@ -3,3 +3,4 @@ members = [
     "server",
     "migration",
 ]
+resolver = "3"
