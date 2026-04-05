@@ -12,19 +12,18 @@ export function ArticleCard({
             <CardHeader>
                 <CardTitle>{article.title}</CardTitle>
                 {article.feedDescription && <CardDescription>{article.feedDescription}</CardDescription>}
-                <Link to={"/reader?url=" + article.link}>Read</Link>
+                <Link to={"/reader?article_uuid=" + article.id}>Read</Link>
             </CardHeader>
         </Card>
     </>
 }
 
-export function FeedArticleList({ feedUuid }: { feedUuid: string }) {
-    const feedsQuery = $api.useQuery("get", "/feed/{feed_uuid}/fetch", {
+export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
+    const feedsQuery = $api.useQuery("get", "/articles", {
         params: {
-            path: { feed_uuid: feedUuid }
+            query: { feed_uuid: feedUuid }
         }
     });
-
 
     if (feedsQuery.isLoading) {
         return <>Loading...</>;

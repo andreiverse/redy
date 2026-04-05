@@ -1,3 +1,4 @@
+import { FeedArticleList } from '#/components/rss/FeedArticles';
 import { FeedList } from '#/components/rss/FeedList';
 import { Button } from '#/components/ui/button';
 import { Input } from '#/components/ui/input';
@@ -7,27 +8,12 @@ import { useState } from 'react'
 export const Route = createFileRoute('/')({ component: App })
 
 function App() {
-  const [article, setArticle] = useState("");
-  const [url, setUrl] = useState("");
-
-  async function fetchArtcile() {
-    let contents = await fetch("http://localhost:8080/reader?url=" + url)
-      .then(c => c.json())
-    
-    setArticle((contents as any).html_content)
-  }
+  const [selectedFeedUuid, setSelectedFeedUuid] = useState<string | null>(null);
 
   return (
     <>
-      <FeedList />
-
-      <Input value={url} onChange={(e) => setUrl(e.target.value)} />
-      <Button onClick={fetchArtcile}>Fetch</Button>
-
-      <div>
-        <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: article }} />
-      </div>
-      
+      <FeedList selected={selectedFeedUuid} setSelected={setSelectedFeedUuid} /> 
+      <FeedArticleList feedUuid={selectedFeedUuid} />
     </>
   )
 }

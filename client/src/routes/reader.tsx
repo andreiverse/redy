@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from "zod";
 
 const searchSchema = z.object({
-  url: z.string(),
+  article_uuid: z.string(),
 })
 
 export const Route = createFileRoute('/reader')({
@@ -12,12 +12,12 @@ export const Route = createFileRoute('/reader')({
 })
 
 function RouteComponent() {
-  const { url } = Route.useSearch();
+  const { article_uuid } = Route.useSearch();
 
-  const articleQuery = $api.useQuery("get", "/reader", {
+  const articleQuery = $api.useQuery("get", "/articles/{article_uuid}", {
     params: {
-      query: {
-        url
+      path: {
+        article_uuid
       }
     }
   })
@@ -30,9 +30,13 @@ function RouteComponent() {
     return <>Error: {articleQuery.error}</>
   }
 
+  if (articleQuery.data.htmlContent == null) {
+    return <>Article could not be fetched, go to link: <a target='_blank' href={articleQuery.data.link}>click</a></>
+  }
+
   return <div>
     <div>
-      <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.html_content }} />
+      <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.htmlContent }} />
     </div>
   </div>
 }
