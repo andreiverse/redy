@@ -1,12 +1,10 @@
 use crate::dto::article_dto::ArticleDto;
-use crate::entities::{article, feed};
-use crate::service::rss_fetcher_service::rss_fetch;
-use crate::{AppState, dto::feed_dto::FeedDto};
+use crate::entities::article;
+use crate::AppState;
 use axum::extract::{Path, Query};
 use axum::{Json, extract::State};
-use legible::Article;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect, TryIntoModel};
-use serde::{Deserialize, Serialize};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
