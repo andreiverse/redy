@@ -30,13 +30,19 @@ function RouteComponent() {
     return <>Error: {articleQuery.error}</>
   }
 
-  if (articleQuery.data.htmlContent == null) {
-    return <>Article could not be fetched, go to link: <a target='_blank' href={articleQuery.data.link}>click</a></>
+  if (articleQuery.data.article.htmlContent == null) {
+    return <>Article could not be fetched, go to link: <a target='_blank' href={articleQuery.data.article.link}>click</a></>
   }
 
   return <div>
     <div>
-      <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.htmlContent }} />
+      <div className='text-3xl'>{articleQuery.data.article.title}</div>
+      <div className=''>
+        {
+          articleQuery.data.sentimentScore && <>Sentimental score: {articleQuery.data.sentimentScore}</>
+        }
+      </div>
+      <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.article.htmlContent }} />
     </div>
   </div>
 }

@@ -1,13 +1,12 @@
-use crate::dto::article_dto::ArticleDto;
-use crate::entities::article;
+use crate::dto::article_dto::ArticleWithDataDto;
+use crate::entities::{self, article};
 use crate::AppState;
-use axum::extract::{Path, Query};
-use axum::{Json, extract::State};
+use axum::extract::{Path, Query, State};
+use axum::Json;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::Deserialize;
 use utoipa::IntoParams;
-use utoipa_axum::router::OpenApiRouter;
-use utoipa_axum::routes;
+use utoipa_axum::{router::OpenApiRouter, routes};
 use uuid::Uuid;
 
 #[derive(IntoParams, Deserialize)]
@@ -20,20 +19,22 @@ pub struct ArticleGetParams {
     path = "/{article_uuid}",
     tag = "article",
     responses(
-        (status=200, body=ArticleDto)
+        (status=200, body=ArticleWithDataDto)
     )
 )]
 pub async fn article_get_by_uuid(
     State(state): State<AppState>,
     Path(article_uuid): Path<Uuid>,
-) -> Json<ArticleDto> {
-    let query = article::Entity::find_by_id(article_uuid)
+) -> Json<ArticleWithDataDto> {
+    let query = article::Entity::find()
+        .filter(article::Column::Id.eq(article_uuid))
+        .find_also_related(entities::article_data::Entity)
         .one(&state.db)
         .await
         .unwrap()
-        .unwrap();
+        .unwrap(); // (ArticleModel, Option<ArticleDataModel>)
 
-    Json(ArticleDto::from(query))
+    Json(ArticleWithDataDto::from(query))
 }
 
 #[utoipa::path(
@@ -42,21 +43,14 @@ pub async fn article_get_by_uuid(
     tag = "article",
     params(ArticleGetParams),
     responses(
-        (status=200, body=Vec<ArticleDto>)
+        (status=200, body=Vec<ArticleWithDataDto>)
     )
 )]
 pub async fn article_get(
     State(state): State<AppState>,
     Query(params): Query<ArticleGetParams>,
-) -> Json<Vec<ArticleDto>> {
-    let mut query = article::Entity::find();
-
-    if let Some(feed_uuid) = params.feed_uuid {
-        query = query.filter(article::Column::FeedId.eq(feed_uuid));
-    }
-
-    let articles = query
-        .order_by_desc(article::Column::PublishedAt)
+) -> Json<Vec<ArticleWithDataDto>> {
+    let mut query = article::Entity::find()
         .select_only()
         .column(article::Column::Id)
         .column(article::Column::Title)
@@ -66,11 +60,19 @@ pub async fn article_get(
         .column(article::Column::Status)
         .column(article::Column::FetchedAt)
         .column(article::Column::ContentHash)
+        .find_also_related(entities::article_data::Entity);
+
+    if let Some(feed_uuid) = params.feed_uuid {
+        query = query.filter(article::Column::FeedId.eq(feed_uuid));
+    }
+
+    let results = query
+        .order_by_desc(article::Column::PublishedAt)
         .all(&state.db)
         .await
-        .unwrap();
+        .unwrap(); // Vec<(ArticleModel, Option<ArticleDataModel>)>
 
-    Json(articles.into_iter().map(ArticleDto::from).collect())
+    Json(results.into_iter().map(ArticleWithDataDto::from).collect())
 }
 
 pub fn router() -> OpenApiRouter<AppState> {

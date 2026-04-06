@@ -138,6 +138,11 @@ export interface components {
         };
         /** @enum {string} */
         ArticleStatusDto: "pending" | "extracted" | "extractionFailed" | "done";
+        ArticleWithDataDto: {
+            article: components["schemas"]["ArticleDto"];
+            /** Format: double */
+            sentimentScore?: number | null;
+        };
         FeedDto: {
             /** Format: date-time */
             created_at: string;
@@ -175,7 +180,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ArticleDto"][];
+                    "application/json": components["schemas"]["ArticleWithDataDto"][];
                 };
             };
         };
@@ -196,7 +201,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ArticleDto"];
+                    "application/json": components["schemas"]["ArticleWithDataDto"];
                 };
             };
         };

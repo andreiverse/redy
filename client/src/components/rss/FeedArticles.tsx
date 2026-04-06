@@ -34,13 +34,13 @@ export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
     }
 
     const sorted = [...feedsQuery.data].sort(
-        (a, b) => new Date(b.publishedAt ?? Date.now()).getTime() - new Date(a.publishedAt ?? Date.now()).getTime()
+        (a, b) => new Date(b.article.publishedAt ?? Date.now()).getTime() - new Date(a.article.publishedAt ?? Date.now()).getTime()
     );
 
     return <>
         <div className="space-y-2">
             {
-                sorted.map(article => <ArticleCard key={article.link} article={article} />)
+                sorted.map(article => <ArticleCard key={article.article.link} article={article.article} />)
             }
         </div>
     </>;
