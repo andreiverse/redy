@@ -1,42 +1,44 @@
 import { $api } from "#/lib/api";
-import { type components } from "#/lib/api/v1";
-import { Link } from "@tanstack/react-router";
 import { Card, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
 
 export function FeedList({
-    selected, setSelected
+  selected,
+  setSelected
 }: {
-    selected: string | null,
-    setSelected: (selected: string | null) => void
+  selected: string | null,
+  setSelected: (selected: string | null) => void
 }) {
-    const feedsQuery = $api.useQuery("get", "/feed");
+  const feedsQuery = $api.useQuery("get", "/feed");
 
-    if (feedsQuery.isLoading) {
-        return <>Loading...</>;
-    }
+  if (feedsQuery.isLoading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
 
-    if (feedsQuery.isError || !feedsQuery.isSuccess) {
-        return <>Error: {feedsQuery.error}</>;
-    }
+  if (feedsQuery.isError || !feedsQuery.isSuccess) {
+    return <div className="text-red-500 text-center py-8">Error: {feedsQuery.error}</div>;
+  }
 
-    return <>
-        <div className="grid grid-cols-3 space gap-2 mb-2">
-            {
-                feedsQuery.data.map(feed =>
-                    <Card key={feed.id} className="h-full">
-                        <CardHeader>
-                            <CardTitle>{feed.url}</CardTitle>
-                            {
-                                selected == feed.id ? <Button onClick={() => setSelected(null)}>Remove filter</Button> :
-                                    <Button onClick={() => setSelected(feed.id)}>Filter by this</Button>
-                            }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+      {feedsQuery.data.map((feed) => {
+        const isSelected = selected === feed.id;
 
-                        </CardHeader>
-                    </Card>
-
-                )
-            }
-        </div>
-    </>;
+        return (
+          <Card
+            key={feed.id}
+            className={`h-full cursor-pointer transition-transform duration-150
+              ${isSelected ? "bg-blue-100 shadow-lg" : "hover:shadow-md hover:scale-105"}`}
+            onClick={() => setSelected(isSelected ? null : feed.id)}
+          >
+            <CardHeader className="flex flex-col gap-2">
+              <CardTitle className={isSelected ? "text-black" : "text-white"}>{feed.name}</CardTitle>
+              <div className="text-sm text-gray-500">
+                {isSelected ? "Click to remove filter" : "Click to filter by this"}
+              </div>
+            </CardHeader>
+          </Card>
+        );
+      })}
+    </div>
+  );
 }

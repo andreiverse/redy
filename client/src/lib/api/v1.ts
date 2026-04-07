@@ -130,6 +130,7 @@ export interface components {
             htmlContent?: string | null;
             /** Format: uuid */
             id: string;
+            language: string;
             link: string;
             /** Format: date-time */
             publishedAt?: string | null;
@@ -145,10 +146,12 @@ export interface components {
         };
         FeedDto: {
             /** Format: date-time */
-            created_at: string;
-            feed_type: string;
+            createdAt: string;
+            defaultLanguage: string;
+            feedType: string;
             /** Format: uuid */
             id: string;
+            name: string;
             url: string;
         };
         HtmlArticle: {

@@ -20,6 +20,7 @@ pub struct Model {
     pub status: ArticleStatus,
     pub published_at: Option<DateTimeWithTimeZone>,
     pub fetched_at: DateTimeWithTimeZone,
+    pub language: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

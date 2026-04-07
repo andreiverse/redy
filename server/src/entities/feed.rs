@@ -14,6 +14,8 @@ pub struct Model {
     pub feed_type: FeedType,
     pub created_at: DateTimeWithTimeZone,
     pub last_fetch: Option<DateTimeWithTimeZone>,
+    pub name: String,
+    pub default_language: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

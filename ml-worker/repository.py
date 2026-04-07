@@ -11,7 +11,7 @@ def get_article_by_uuid(id: uuid.UUID):
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "SELECT html_content, title FROM article WHERE id = %s",
+            "SELECT html_content, title, language FROM article WHERE id = %s",
             (str(id),)
         )
         return cursor.fetchone()

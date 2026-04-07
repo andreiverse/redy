@@ -14,11 +14,17 @@ def handle_sentimental_analysis(article_uuid: uuid.UUID) -> utils.Status:
         print("Warning: got invalid article UUID, throwing away message:", article_uuid)
         return utils.Status.INVALID
 
-    if article[0] == None:
+    html_content, title, language = article
+
+    if html_content == None:
         print("Warning: got article without html_content, throwing away message:", article_uuid)
         return utils.Status.INVALID
 
-    text_content = utils.extract_text_from_html_content(article[0])
+    if language[0:2] != "en":
+        print("Warning: got article with language that's not english (",language,"), dropping:", article_uuid)
+        return utils.Status.INVALID
+
+    text_content = utils.extract_text_from_html_content(html_content)
     
     pol_scores = sia.polarity_scores(text_content)
 

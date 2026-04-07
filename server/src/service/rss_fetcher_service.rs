@@ -37,6 +37,7 @@ pub async fn rss_fetch(feed: &feed::Model) -> anyhow::Result<Vec<ArticleActiveMo
                     .or_else(|_| chrono::DateTime::parse_from_rfc2822(d))
                     .ok()
             });
+            let language = channel.language().unwrap_or(&feed.default_language);
 
             ArticleActiveModel {
                 id: Set(uuid::Uuid::new_v4()),
@@ -49,6 +50,7 @@ pub async fn rss_fetch(feed: &feed::Model) -> anyhow::Result<Vec<ArticleActiveMo
                 status: Set(ArticleStatus::Pending),
                 published_at: Set(published_at),
                 fetched_at: Set(now),
+                language: Set(language.to_owned())
             }
         })
         .collect();

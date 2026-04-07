@@ -37,9 +37,12 @@ function RouteComponent() {
   return <div>
     <div>
       <div className='text-3xl'>{articleQuery.data.article.title}</div>
-      <div className=''>
+      <div className='flex flex-col mt-2'>
         {
-          articleQuery.data.sentimentScore && <>Sentimental score: {articleQuery.data.sentimentScore}</>
+          articleQuery.data.sentimentScore && <span>Sentimental score: {articleQuery.data.sentimentScore}</span>
+        }
+        {
+          <span>Language: {articleQuery.data.article.language}</span>
         }
       </div>
       <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.article.htmlContent }} />

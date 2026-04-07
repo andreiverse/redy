@@ -58,8 +58,10 @@ pub async fn article_get(
         .column(article::Column::FeedId)
         .column(article::Column::Link)
         .column(article::Column::Status)
+        .column(article::Column::Language)
         .column(article::Column::FetchedAt)
         .column(article::Column::ContentHash)
+        .limit(50)
         .find_also_related(entities::article_data::Entity);
 
     if let Some(feed_uuid) = params.feed_uuid {
