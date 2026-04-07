@@ -58,12 +58,4 @@ impl MigrationTrait for Migration {
 pub enum Article {
     Table,
     Language,
-    FeedId, // if your join requires feed_id
-}
-
-#[derive(DeriveIden)]
-pub enum Feed {
-    Table,
-    Id,
-    DefaultLanguage,
 }
