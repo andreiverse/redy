@@ -33,6 +33,8 @@ def handle_sentimental_analysis(article_uuid: uuid.UUID) -> utils.Status:
         sentiment_score=pol_scores["compound"]
     )
 
+    print(f"Calculated successfully sentimental score {pol_scores["compound"]} for {article_uuid}")
+
     if db_status:
         return utils.Status.SUCCESS
     

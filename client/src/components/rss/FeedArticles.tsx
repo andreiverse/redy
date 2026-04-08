@@ -11,6 +11,7 @@ export function ArticleCard({
         <Card>
             <CardHeader>
                 <CardTitle>{article.title}</CardTitle>
+                <CardDescription>Published at {article.publishedAt}</CardDescription>
                 {article.feedDescription && <CardDescription>{article.feedDescription}</CardDescription>}
                 <Link to={"/reader?article_uuid=" + article.id}>Read</Link>
             </CardHeader>

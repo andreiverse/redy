@@ -51,6 +51,7 @@ pub async fn article_get(
     Query(params): Query<ArticleGetParams>,
 ) -> Json<Vec<ArticleWithDataDto>> {
     let mut query = article::Entity::find()
+        .filter(article::Column::HtmlContent.is_not_null())
         .select_only()
         .column(article::Column::Id)
         .column(article::Column::Title)

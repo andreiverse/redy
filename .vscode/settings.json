@@ -1,5 +1,12 @@
 {
     "python.analysis.extraPaths": [
         "./ml-worker"
+    ],
+    "python-envs.pythonProjects": [
+        {
+            "path": "exploratory",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
     ]
 }

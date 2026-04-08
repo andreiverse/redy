@@ -32,12 +32,9 @@ async def run():
             if len(msg.data) == 16:
                 raw_uuid = uuid.UUID(bytes=msg.data)
                 
-                print(f"Received UUID object: {raw_uuid}")
-                
                 status = sentimental_analysis_worker.handle_sentimental_analysis(raw_uuid)
 
                 if (status == utils.Status.SUCCESS) or (status == utils.Status.INVALID):
-                    print("acking message")
                     await msg.ack()
                 else:
                     print("sending nak with delay")
