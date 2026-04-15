@@ -23,17 +23,9 @@ pub async fn reader_get(Query(params): Query<ReaderGetParams>) -> Response {
         Ok(html_content) => Json(html_content).into_response(),
 
         Err(e) => {
-            let mut report = format!("Error: {}", e);
-            let mut source = e.source();
-
-            while let Some(cause) = source {
-                report.push_str(&format!("\nCaused by: {}", cause));
-                source = cause.source();
-            }
-
-            eprintln!("Error: {}", report);
-
-           AppError::Internal.into_response() 
+            let report = format!("Error: {:?}", e);
+            eprintln!("{}", report);
+           AppError::Internal(report).into_response() 
         }
     }
 }
@@ -43,4 +35,3 @@ pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(reader_get))
 }
-

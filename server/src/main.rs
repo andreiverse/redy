@@ -23,9 +23,14 @@ use crate::scrape_article_worker::scrape_article_worker;
 use crate::service::worker_service;
 use crate::worker::{fetch_feeds_worker::fetch_feeds_task, scrape_article_worker};
 
+use std::sync::Arc;
+use crate::service::auth_service::AuthService;
+
 #[derive(Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
+    pub auth_service: Arc<AuthService>,
+    pub frontend_url: String,
 }
 
 #[derive(Parser)]
@@ -93,9 +98,17 @@ async fn main() -> Result<(), anyhow::Error> {
         }
     }
 
+    let auth_service = AuthService::new(
+        &std::env::var("OIDC_ISSUER").unwrap_or("https://accounts.google.com".to_string()),
+        &std::env::var("OIDC_CLIENT_ID").unwrap_or("client_id".to_string()),
+        &std::env::var("OIDC_CLIENT_SECRET").unwrap_or("client_secret".to_string()),
+        &std::env::var("OIDC_REDIRECT_URL").unwrap_or("http://localhost:8080/auth/callback".to_string()),
+        db.clone(),
+    ).await?;
+
     let (_router, _api) = controller::create_controller().split_for_parts();
 
-    let cors = CorsLayer::permissive();
+    let cors = CorsLayer::very_permissive();
 
     let db_for_worker = db.clone();
     let js_worker = jetstream.clone();
@@ -115,7 +128,11 @@ async fn main() -> Result<(), anyhow::Error> {
         scrape_article_worker(&jetstream, &db_for_worker2).await;
     });
 
-    let state = AppState { db };
+    let state = AppState {
+        db,
+        auth_service: Arc::new(auth_service),
+        frontend_url: std::env::var("FRONTEND_URL").unwrap_or("http://localhost:3000".to_string()),
+    };
 
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)

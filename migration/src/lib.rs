@@ -15,6 +15,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260404_152929_add_article_data_table::Migration),
             Box::new(m20260407_190659_add_feed_name::Migration),
             Box::new(m20260407_193740_add_article_language::Migration),
+            Box::new(m20260415_071631_create_user_table::Migration),
         ]
     }
 }
@@ -26,3 +27,4 @@ mod m20260404_152805_remove_article_data_table;
 mod m20260404_152929_add_article_data_table;
 mod m20260407_190659_add_feed_name;
 mod m20260407_193740_add_article_language;
+mod m20260415_071631_create_user_table;
