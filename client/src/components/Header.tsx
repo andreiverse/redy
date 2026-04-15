@@ -1,7 +1,33 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
+import { $api } from '../lib/api'
+import { Button } from './ui/button'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function Header() {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { data: user, isLoading } = $api.useQuery('get', '/auth/me', undefined, {
+    retry: false
+  })
+
+  const { mutate: logout } = $api.useMutation('post', '/auth/logout', {
+    onSuccess: () => {
+      queryClient.clear()
+      navigate({ to: '/' })
+    }
+  })
+
+  const handleLogin = () => {
+    const backendApi = import.meta.env.VITE_BACKEND_API ?? "localhost:8080";
+    const baseUrl = backendApi.startsWith('http') ? backendApi : `http://${backendApi}`;
+    window.location.href = `${baseUrl}/auth/login?redirect_to_frontend=true`;
+  }
+
+  const handleLogout = () => {
+    logout({})
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
@@ -23,9 +49,46 @@ export default function Header() {
           >
             Home
           </Link>
+          {user && (
+            <Link
+              to="/profile"
+              className="nav-link"
+              activeProps={{ className: 'nav-link is-active' }}
+            >
+              Profile
+            </Link>
+          )}
         </div>
 
-       <ThemeToggle />
+        <div className="ml-auto flex items-center gap-4">
+          {!isLoading && (
+            user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-[var(--sea-ink)]">
+                  {user.username}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-xs text-[var(--sea-ink)] hover:bg-[var(--chip-bg)]"
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogin}
+                className="rounded-full border-[var(--chip-line)] text-[var(--sea-ink)] hover:bg-[var(--chip-bg)]"
+              >
+                Login
+              </Button>
+            )
+          )}
+          <ThemeToggle />
+        </div>
 
       </nav>
     </header>

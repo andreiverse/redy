@@ -6,31 +6,38 @@ use axum::{
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-#[allow(dead_code)]
 pub enum AppError {
-    #[error("Invalid input")]
-    BadRequest,
+    #[error("Invalid input: {0}")]
+    BadRequest(String),
 
-    #[error("Internal server error")]
-    Internal,
+    #[error("Internal server error: {0}")]
+    Internal(String),
+
+    #[error("Authentication failed: {0}")]
+    Auth(String),
+
+    #[error("Database error: {0}")]
+    Database(#[from] sea_orm::DbErr),
 }
 
-#[derive(Clone, Copy, serde::Serialize)]
-pub struct AppErrorResponse<'a> {
-    message: &'a str,
+#[derive(serde::Serialize)]
+pub struct AppErrorResponse {
+    message: String,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let status = match self {
-            AppError::BadRequest => StatusCode::BAD_REQUEST,
-            AppError::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+        let (status, message) = match self {
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            AppError::Auth(msg) => (StatusCode::UNAUTHORIZED, msg),
+            AppError::Database(_err) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string()),
         };
 
         (
             status,
             Json(AppErrorResponse {
-                message: &self.to_string(),
+                message,
             }),
         )
             .into_response()
