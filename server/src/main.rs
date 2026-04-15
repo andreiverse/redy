@@ -6,7 +6,7 @@ mod service;
 mod worker;
 
 use async_nats::jetstream;
-use clap::{Parser, Subcommand, command};
+use clap::{Parser, Subcommand};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use uuid::Uuid;
 use std::process::exit;

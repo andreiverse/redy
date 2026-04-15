@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo run --manifest-path server/Cargo.toml
+cargo run --manifest-path server/Cargo.toml -- run-server
