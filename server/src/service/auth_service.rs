@@ -5,6 +5,7 @@ use openidconnect::{
     PkceCodeVerifier, RedirectUrl, Scope, TokenResponse,
 };
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use tower_sessions::Session;
 use tracing::info;
 use uuid::Uuid;
 
@@ -60,6 +61,19 @@ impl AuthService {
             http_client,
             db,
         })
+    }
+
+    pub async fn get_user_from_session(&self, session: &Session) -> Result<user::Model, AppError> {
+        let user_id: uuid::Uuid = session
+            .get("user_id")
+            .await
+            .unwrap()
+            .ok_or_else(|| AppError::Auth("Not logged in".to_string()))?;
+
+        user::Entity::find_by_id(user_id)
+            .one(&self.db)
+            .await?
+            .ok_or_else(|| AppError::Auth("User not found".to_string()))
     }
 
     pub fn get_auth_url(&self) -> (String, CsrfToken, Nonce, PkceCodeVerifier) {

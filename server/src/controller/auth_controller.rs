@@ -132,18 +132,9 @@ pub async fn me(
     State(state): State<AppState>,
     session: Session,
 ) -> Result<Json<UserDto>, AppError> {
-    let user_id: uuid::Uuid = session
-        .get("user_id")
-        .await
-        .unwrap()
-        .ok_or_else(|| AppError::Auth("Not logged in".to_string()))?;
-
-    let user = user::Entity::find_by_id(user_id)
-        .one(&state.db)
-        .await?
-        .ok_or_else(|| AppError::Auth("User not found".to_string()))?;
-
-    Ok(Json(UserDto::from(user)))
+     Ok(Json(UserDto::from(
+        state.auth_service.get_user_from_session(&session).await?
+     )))
 }
 
 #[utoipa::path(

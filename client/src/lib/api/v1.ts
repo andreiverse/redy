@@ -109,7 +109,7 @@ export interface paths {
         };
         get: operations["feed_get"];
         put?: never;
-        post?: never;
+        post: operations["feed_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -164,22 +164,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["sessions_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -208,16 +192,24 @@ export interface components {
             /** Format: double */
             sentimentScore?: number | null;
         };
+        CreateFeedDto: {
+            defaultLanguage: string;
+            feedType: components["schemas"]["FeedTypeDto"];
+            name: string;
+            url: string;
+        };
         FeedDto: {
             /** Format: date-time */
             createdAt: string;
             defaultLanguage: string;
-            feedType: string;
+            feedType: components["schemas"]["FeedTypeDto"];
             /** Format: uuid */
             id: string;
             name: string;
             url: string;
         };
+        /** @enum {string} */
+        FeedTypeDto: "rss";
         HtmlArticle: {
             html_content: string;
             title: string;
@@ -421,6 +413,29 @@ export interface operations {
             };
         };
     };
+    feed_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFeedDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto"];
+                };
+            };
+        };
+    };
     feed_get_by_uuid: {
         parameters: {
             query?: never;
@@ -481,23 +496,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HtmlArticle"];
                 };
-            };
-        };
-    };
-    sessions_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

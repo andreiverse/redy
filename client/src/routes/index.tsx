@@ -1,5 +1,5 @@
-import { FeedArticleList } from '#/components/rss/FeedArticles';
-import { FeedList } from '#/components/rss/FeedList';
+import { FeedArticleList } from '#/components/feed/FeedArticles';
+import { FeedList } from '#/components/feed/FeedList';
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 

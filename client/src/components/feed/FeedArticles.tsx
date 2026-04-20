@@ -2,13 +2,16 @@ import { $api } from "#/lib/api";
 import { type components } from "#/lib/api/v1";
 import { Link } from "@tanstack/react-router";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { CreateFeedDialog } from "./CreateFeedDialog";
 export function ArticleCard({
-    article
+    article,
+    sentimentScore
 }: {
+    sentimentScore?: number | null,
     article: components["schemas"]["ArticleDto"]
 }) {
     return <>
-        <Card>
+        <Card className={`${(sentimentScore ?? 0) < 0 ? 'border-l-solid border-l-red-500 border-l-2' : ''} ${(sentimentScore ?? 0) > 0 ? "border-l-solid border-l-green-500 border-l-2" : ""}`}>
             <CardHeader>
                 <CardTitle>{article.title}</CardTitle>
                 <CardDescription>Published at {article.publishedAt}</CardDescription>
@@ -39,10 +42,12 @@ export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
     );
 
     return <>
-        <div className="space-y-2">
-            {
-                sorted.map(article => <ArticleCard key={article.article.link} article={article.article} />)
-            }
+        <div>
+            <div className="space-y-2">
+                {
+                    sorted.map(article => <ArticleCard key={article.article.link} sentimentScore={article.sentimentScore} article={article.article} />)
+                }
+            </div>
         </div>
     </>;
 }
