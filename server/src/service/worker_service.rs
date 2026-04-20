@@ -5,27 +5,43 @@ use uuid::Uuid;
 
 use crate::entities::{article, article_data};
 
-#[allow(dead_code)]
-pub async fn recalculate_sentimental_analysis_for_uuid(
-    db: &DatabaseConnection,
+const TASKS_ML_SENTIMENTAL_ANALYSIS_SUBJECT: &str = "tasks.ml.sentimental-analysis";
+
+pub async fn calculate_sentimental_analysis_for_uuid(
     js: &jetstream::Context,
     article_uuid: Uuid,
 ) {
-    let article = article::Entity::find_by_id(article_uuid).one(db).await.unwrap().unwrap();
+    publish_task_for_article(js, TASKS_ML_SENTIMENTAL_ANALYSIS_SUBJECT, article_uuid).await; 
+}
 
+pub async fn publish_task_for_article(js: &jetstream::Context, subject: &str, uuid: Uuid) {
     if let Err(e) = js
-        .publish(
-            "tasks.ml.sentimental-analysis",
-            article.id.as_bytes().to_vec().into(),
+        .publish( 
+            subject.to_owned(),
+            uuid.as_bytes().to_vec().into(),
         )
         .await
     {
-        error!("Couldn't publish sentimental analyis {}", e);
+        error!("Couldn't publish {} to {}: {}", uuid, subject, e);
     }
 }
 
-#[allow(dead_code)]
-pub async fn recalculate_sentimental_analysis(
+pub async fn run_ml_for_uuid(
+    js: &jetstream::Context,
+    article_uuid: Uuid
+) {
+    calculate_sentimental_analysis_for_uuid(js, article_uuid).await;
+}
+
+pub async fn run_ml(
+    db: &DatabaseConnection,
+    js: &jetstream::Context,
+    missing_only: bool
+) {
+    calculate_sentimental_analysis(db, js, missing_only).await;
+}
+
+pub async fn calculate_sentimental_analysis(
     db: &DatabaseConnection,
     js: &jetstream::Context,
     missing_only: bool,
@@ -43,14 +59,6 @@ pub async fn recalculate_sentimental_analysis(
     let articles = articles_query.all(db).await.unwrap();
 
     for article in articles {
-        if let Err(e) = js
-            .publish(
-                "tasks.ml.sentimental-analysis",
-                article.id.as_bytes().to_vec().into(),
-            )
-            .await
-        {
-            error!("Couldn't publish sentimental analyis {}", e);
-        }
+        calculate_sentimental_analysis_for_uuid(js, article.id).await;
     }
 }

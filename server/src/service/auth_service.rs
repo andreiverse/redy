@@ -38,7 +38,18 @@ impl AuthService {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to discover provider: {}", e)))?;
 
-        info!("OIDC provider metadata successful, issuer url: {}", provider_metadata.issuer());
+        let claims_supported: Vec<&str> = provider_metadata
+            .claims_supported()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str())
+            .collect();
+
+        info!(
+            "OIDC provider metadata successful, issuer url: {}",
+            provider_metadata.issuer()
+        );
+        info!("     supported claims: {}", claims_supported.join(", "));
 
         Ok(Self {
             provider_metadata,

@@ -4,3 +4,4 @@
 exploratory
 .venv
 __pycache__
+.env
