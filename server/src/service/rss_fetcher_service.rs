@@ -50,7 +50,7 @@ pub async fn rss_fetch(feed: &feed::Model) -> anyhow::Result<Vec<ArticleActiveMo
                 status: Set(ArticleStatus::Pending),
                 published_at: Set(published_at),
                 fetched_at: Set(now),
-                language: Set(language.to_owned())
+                language: Set(language.to_owned()),
             }
         })
         .collect();

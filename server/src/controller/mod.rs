@@ -3,10 +3,10 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::AppState;
 
 pub mod article_controller;
-pub mod reader_controller;
-pub mod feed_controller;
-pub mod sessions_controller;
 pub mod auth_controller;
+pub mod feed_controller;
+pub mod reader_controller;
+pub mod sessions_controller;
 
 pub fn create_controller() -> OpenApiRouter<AppState> {
     OpenApiRouter::<AppState>::new()

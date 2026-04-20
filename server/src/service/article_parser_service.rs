@@ -4,7 +4,7 @@ use serde::Serialize;
 use tracing::debug;
 use utoipa::ToSchema;
 
-use crate::service::article_fetcher::{normal, googlebot, amp, headless};
+use crate::service::article_fetcher::{amp, googlebot, headless, normal};
 
 #[derive(Serialize, ToSchema)]
 pub struct HtmlArticle {
@@ -47,13 +47,19 @@ pub async fn parse_article_from_url(url: &str) -> Result<HtmlArticle> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::{routing::get, Router};
+    use axum::{Router, routing::get};
     use std::net::SocketAddr;
     use tokio::net::TcpListener;
 
     async fn start_mock_server() -> (SocketAddr, tokio::task::JoinHandle<()>) {
-        let app = Router::new()
-            .route("/", get(|| async { "<html><head><title>Test Title</title></head><body>" .to_string() + &"a".repeat(11000) + "</body></html>" }));
+        let app = Router::new().route(
+            "/",
+            get(|| async {
+                "<html><head><title>Test Title</title></head><body>".to_string()
+                    + &"a".repeat(11000)
+                    + "</body></html>"
+            }),
+        );
 
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();

@@ -1,8 +1,8 @@
+use crate::AppState;
 use crate::dto::article_dto::ArticleWithDataDto;
 use crate::entities::{self, article};
-use crate::AppState;
-use axum::extract::{Path, Query, State};
 use axum::Json;
+use axum::extract::{Path, Query, State};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::Deserialize;
 use utoipa::IntoParams;

@@ -31,15 +31,12 @@ impl IntoResponse for AppError {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             AppError::Auth(msg) => (StatusCode::UNAUTHORIZED, msg),
-            AppError::Database(_err) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string()),
+            AppError::Database(_err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Database error".to_string(),
+            ),
         };
 
-        (
-            status,
-            Json(AppErrorResponse {
-                message,
-            }),
-        )
-            .into_response()
+        (status, Json(AppErrorResponse { message })).into_response()
     }
 }

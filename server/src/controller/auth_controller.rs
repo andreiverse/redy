@@ -1,16 +1,16 @@
+use axum::Json;
 use axum::extract::{Query, State};
 use axum::response::{IntoResponse, Redirect, Response};
-use axum::Json;
 use openidconnect::{Nonce, PkceCodeVerifier};
 use sea_orm::EntityTrait;
 use serde::Deserialize;
 use tower_sessions::Session;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
+use crate::AppState;
 use crate::api::error::AppError;
 use crate::dto::user_dto::UserDto;
 use crate::entities::user;
-use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct LoginQuery {
@@ -43,8 +43,11 @@ pub async fn login(
 
     session.insert("csrf_token", csrf_token).await.unwrap();
     session.insert("nonce", nonce).await.unwrap();
-    session.insert("pkce_verifier", pkce_verifier).await.unwrap();
-    
+    session
+        .insert("pkce_verifier", pkce_verifier)
+        .await
+        .unwrap();
+
     if let Some(true) = query.redirect_to_frontend {
         session.insert("redirect_to_frontend", true).await.unwrap();
     }
@@ -95,13 +98,19 @@ pub async fn callback(
         .await?;
 
     session.insert("user_id", user.id).await.unwrap();
-    
+
     let redirect_to_frontend: Option<bool> = session.get("redirect_to_frontend").await.unwrap();
-    
+
     session.remove::<String>("csrf_token").await.unwrap();
     session.remove::<Nonce>("nonce").await.unwrap();
-    session.remove::<PkceCodeVerifier>("pkce_verifier").await.unwrap();
-    session.remove::<bool>("redirect_to_frontend").await.unwrap();
+    session
+        .remove::<PkceCodeVerifier>("pkce_verifier")
+        .await
+        .unwrap();
+    session
+        .remove::<bool>("redirect_to_frontend")
+        .await
+        .unwrap();
 
     if let Some(true) = redirect_to_frontend {
         Ok(Redirect::to(&state.frontend_url).into_response())
@@ -159,19 +168,14 @@ pub async fn logout(session: Session) -> Result<(), AppError> {
         (status = 401, description = "Not logged in")
     )
 )]
-pub async fn delete_me(
-    State(state): State<AppState>,
-    session: Session,
-) -> Result<(), AppError> {
+pub async fn delete_me(State(state): State<AppState>, session: Session) -> Result<(), AppError> {
     let user_id: uuid::Uuid = session
         .get("user_id")
         .await
         .unwrap()
         .ok_or_else(|| AppError::Auth("Not logged in".to_string()))?;
 
-    user::Entity::delete_by_id(user_id)
-        .exec(&state.db)
-        .await?;
+    user::Entity::delete_by_id(user_id).exec(&state.db).await?;
 
     session.clear().await;
     Ok(())

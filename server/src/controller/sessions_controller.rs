@@ -25,6 +25,5 @@ pub async fn sessions_get(session: Session) -> Response {
 }
 
 pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(sessions_get))
+    OpenApiRouter::new().routes(routes!(sessions_get))
 }

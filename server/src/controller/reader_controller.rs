@@ -1,8 +1,16 @@
-use axum::{Json, extract::Query, response::{IntoResponse, Response}};
+use crate::{
+    AppState,
+    api::error::AppError,
+    service::article_parser_service::{HtmlArticle, parse_article_from_url},
+};
+use axum::{
+    Json,
+    extract::Query,
+    response::{IntoResponse, Response},
+};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
-use crate::{AppState, api::error::AppError, service::article_parser_service::{HtmlArticle, parse_article_from_url}};
 
 #[derive(Deserialize, IntoParams)]
 pub struct ReaderGetParams {
@@ -25,13 +33,11 @@ pub async fn reader_get(Query(params): Query<ReaderGetParams>) -> Response {
         Err(e) => {
             let report = format!("Error: {:?}", e);
             eprintln!("{}", report);
-           AppError::Internal(report).into_response() 
+            AppError::Internal(report).into_response()
         }
     }
 }
 
-
 pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(reader_get))
+    OpenApiRouter::new().routes(routes!(reader_get))
 }

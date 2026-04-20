@@ -1,9 +1,9 @@
+use super::html_looks_blocked;
 use anyhow::{Result, anyhow};
 use chromiumoxide::browser::BrowserConfig;
 use futures::StreamExt;
-use tracing::debug;
 use std::time::Duration;
-use super::html_looks_blocked;
+use tracing::debug;
 
 pub async fn fetch(url: &str) -> Result<String> {
     debug!("[4] Trying headless browser");
@@ -33,13 +33,15 @@ pub async fn fetch(url: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::{routing::get, Router};
+    use axum::{Router, routing::get};
     use std::net::SocketAddr;
     use tokio::net::TcpListener;
 
     async fn start_mock_server() -> (SocketAddr, tokio::task::JoinHandle<()>) {
-        let app = Router::new()
-            .route("/", get(|| async { "<html><body>Headless Test</body></html>" }));
+        let app = Router::new().route(
+            "/",
+            get(|| async { "<html><body>Headless Test</body></html>" }),
+        );
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
         let handle = tokio::spawn(async move {

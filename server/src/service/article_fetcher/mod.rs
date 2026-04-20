@@ -2,10 +2,10 @@ use anyhow::Result;
 use axum::http::StatusCode;
 use reqwest::Client;
 
-pub mod normal;
-pub mod googlebot;
 pub mod amp;
+pub mod googlebot;
 pub mod headless;
+pub mod normal;
 
 pub async fn fetch_with_client(client: &Client, url: &str) -> Result<(StatusCode, String)> {
     let response = client.get(url).send().await?;

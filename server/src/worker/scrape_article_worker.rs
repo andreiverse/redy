@@ -87,7 +87,10 @@ pub async fn scrape_article_worker(
                     .publish("tasks.ml.sentimental-analysis", msg.payload.clone())
                     .await
                 {
-                    error!("Couldn't publish task tasks.ml.sentimental-analysis, naking with 30 minutes: {}", e);
+                    error!(
+                        "Couldn't publish task tasks.ml.sentimental-analysis, naking with 30 minutes: {}",
+                        e
+                    );
 
                     msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(30))))
                         .await

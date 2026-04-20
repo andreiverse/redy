@@ -11,7 +11,6 @@ use dotenv::dotenv;
 use async_nats::jetstream;
 use clap::{Parser, Subcommand};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use uuid::Uuid;
 use std::process::exit;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::interval;
@@ -21,13 +20,14 @@ use tracing::{Level, info, warn};
 use tracing_subscriber::EnvFilter;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
+use uuid::Uuid;
 
 use crate::scrape_article_worker::scrape_article_worker;
 use crate::service::worker_service;
 use crate::worker::{fetch_feeds_worker::fetch_feeds_task, scrape_article_worker};
 
-use std::sync::Arc;
 use crate::service::auth_service::AuthService;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -75,7 +75,6 @@ async fn main() -> Result<(), anyhow::Error> {
         .with_env_filter(EnvFilter::new("html5ever=off,info"))
         .with_max_level(Level::INFO)
         .init();
-    
 
     #[cfg(feature = "dotenv")]
     {
@@ -108,27 +107,32 @@ async fn main() -> Result<(), anyhow::Error> {
             exit(0)
         }
         Commands::RecalculateSentimentalAnalysis { missing_only } => {
-            warn!("recalculating sentimental analysis, missing only: {}", missing_only);
+            warn!(
+                "recalculating sentimental analysis, missing only: {}",
+                missing_only
+            );
             worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await;
             exit(0)
         }
         Commands::RerunMl { missing_only } => {
             worker_service::run_ml(&db, &js, missing_only).await;
             exit(0);
-        },
+        }
         Commands::CalculateSentimentalAnalysisForUuid { missing_only } => {
             worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await;
             exit(0);
-        },
+        }
     }
 
     let auth_service = AuthService::new(
         &std::env::var("OIDC_ISSUER").unwrap_or("https://accounts.google.com".to_string()),
         &std::env::var("OIDC_CLIENT_ID").unwrap_or("client_id".to_string()),
         &std::env::var("OIDC_CLIENT_SECRET").unwrap_or("client_secret".to_string()),
-        &std::env::var("OIDC_REDIRECT_URL").unwrap_or("http://localhost:8080/auth/callback".to_string()),
+        &std::env::var("OIDC_REDIRECT_URL")
+            .unwrap_or("http://localhost:8080/auth/callback".to_string()),
         db.clone(),
-    ).await?;
+    )
+    .await?;
 
     let (_router, _api) = controller::create_controller().split_for_parts();
 
