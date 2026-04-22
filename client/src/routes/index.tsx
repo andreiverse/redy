@@ -1,17 +1,45 @@
-import { FeedArticleList } from '#/components/feed/FeedArticles';
-import { FeedList } from '#/components/feed/FeedList';
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { $api } from '#/lib/api'
+import { Heart } from 'lucide-react'
+import { Button } from '#/components/ui/button'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: Index
+})
 
-function App() {
-  const [selectedFeedUuid, setSelectedFeedUuid] = useState<string | null>(null);
+function Index() {
+  const { data: user } = $api.useQuery('get', '/auth/me', undefined, { retry: false })
+  const { data: favorites } = $api.useQuery('get', '/favorites', undefined, { enabled: !!user })
 
   return (
-    <>
-      <FeedList selected={selectedFeedUuid} setSelected={setSelectedFeedUuid} /> 
-      <FeedArticleList feedUuid={selectedFeedUuid} />
-    </>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Welcome to Redy</h1>
+        <p className="text-muted-foreground max-w-[600px] md:text-xl">
+          Your personal RSS reader. Stay updated with your favorite feeds in one place.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        {user ? (
+          favorites && favorites.length > 0 ? (
+            <Button asChild size="lg">
+              <Link to="/feed/$feedId" params={{ feedId: favorites[0].id }}>
+                <Heart className="mr-2 size-4 fill-current" />
+                Go to your first favorite
+              </Link>
+            </Button>
+          ) : (
+            <div className="text-muted-foreground italic">
+              Select a feed from the sidebar to start reading
+            </div>
+          )
+        ) : (
+          <div className="text-muted-foreground">
+            Login to see your favorites and personalized feeds
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

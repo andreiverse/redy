@@ -4,3 +4,4 @@ pub use super::article::Entity as Article;
 pub use super::article_data::Entity as ArticleData;
 pub use super::feed::Entity as Feed;
 pub use super::user::Entity as User;
+pub use super::user_feed_favorite::Entity as UserFeedFavorite;

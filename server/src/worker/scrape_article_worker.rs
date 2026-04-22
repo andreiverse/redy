@@ -92,7 +92,7 @@ pub async fn scrape_article_worker(
                         e
                     );
 
-                    msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_mins(30))))
+                    msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(30 * 60))))
                         .await
                         .ok();
                 } else {
@@ -108,7 +108,7 @@ pub async fn scrape_article_worker(
             Err(err) => {
                 error!("Processing failed: {}, retrying later in 24 hours", err);
 
-                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_hours(24))))
+                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(24 * 60 * 60))))
                     .await
                     .ok();
             }

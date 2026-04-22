@@ -82,7 +82,8 @@ async fn main() -> Result<(), anyhow::Error> {
         dotenv().ok();
     }
 
-    let mut opt = ConnectOptions::new("postgres://user:password@localhost:5432/my_app_db");
+    let db_url = std::env::var("DATABASE_URL").unwrap_or("postgres://user:password@localhost:5432/my_app_db".to_string());
+    let mut opt = ConnectOptions::new(db_url);
 
     opt.sqlx_slow_statements_logging_settings(
         tracing_log::log::LevelFilter::Warn,
@@ -91,7 +92,7 @@ async fn main() -> Result<(), anyhow::Error> {
     opt.sqlx_logging_level(tracing_log::log::LevelFilter::Debug);
 
     let db = Database::connect(opt).await?;
-    let nats_url = "nats://localhost:4222";
+    let nats_url = std::env::var("NATS_URL").unwrap_or("nats://localhost:4222".to_string());
     let client = async_nats::connect(nats_url).await?;
     let js = jetstream::new(client);
 
@@ -141,7 +142,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let db_for_worker = db.clone();
     let js_worker = js.clone();
     tokio::spawn(async move {
-        let mut ticker = interval(Duration::from_mins(10));
+        let mut ticker = interval(Duration::from_secs(10 * 60));
         info!("Fetching feed articles every 10 minutes...");
         loop {
             ticker.tick().await;

@@ -31,6 +31,8 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     User,
+    #[sea_orm(has_many = "super::user_feed_favorite::Entity")]
+    UserFeedFavorite,
 }
 
 impl Related<super::article::Entity> for Entity {
@@ -39,9 +41,18 @@ impl Related<super::article::Entity> for Entity {
     }
 }
 
+impl Related<super::user_feed_favorite::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::UserFeedFavorite.def()
+    }
+}
+
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::User.def()
+        super::user_feed_favorite::Relation::User.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::user_feed_favorite::Relation::Feed.def().rev())
     }
 }
 

@@ -6,7 +6,7 @@ use crate::service::rss_fetcher_service::rss_fetch;
 use crate::{AppState, dto::feed_dto::FeedDto};
 use axum::extract::Path;
 use axum::{Json, extract::State};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelBehavior, ActiveModelTrait, EntityTrait, TryIntoModel};
 use tower_sessions::Session;

@@ -100,6 +100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_favorite_feeds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/favorites/{feed_uuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["favorite_feed"];
+        delete: operations["unfavorite_feed"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/feed": {
         parameters: {
             query?: never;
@@ -387,6 +419,65 @@ export interface operations {
             };
             /** @description Not logged in */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_favorite_feeds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto"][];
+                };
+            };
+        };
+    };
+    favorite_feed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Feed favorited successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unfavorite_feed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Feed unfavorited successfully */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

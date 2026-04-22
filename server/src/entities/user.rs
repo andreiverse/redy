@@ -18,11 +18,22 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::feed::Entity")]
     Feed,
+    #[sea_orm(has_many = "super::user_feed_favorite::Entity")]
+    UserFeedFavorite,
+}
+
+impl Related<super::user_feed_favorite::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::UserFeedFavorite.def()
+    }
 }
 
 impl Related<super::feed::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Feed.def()
+        super::user_feed_favorite::Relation::Feed.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::user_feed_favorite::Relation::User.def().rev())
     }
 }
 

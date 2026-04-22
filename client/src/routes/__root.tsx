@@ -2,18 +2,18 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  Outlet,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
 import Header from '../components/Header'
+import { FeedList } from '../components/feed/FeedList'
 
 import TanStackQueryProvider from '../integrations/tanstack-query/root-provider'
-
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
-
 import type { QueryClient } from '@tanstack/react-query'
 
 interface MyRouterContext {
@@ -25,28 +25,18 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'TanStack Start Starter',
-      },
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'Redy RSS Reader' },
     ],
     links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
+      { rel: 'stylesheet', href: appCss },
     ],
   }),
   shellComponent: RootDocument,
 })
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument() {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -56,14 +46,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
         <TanStackQueryProvider>
           <Header />
-          <main className='mx-auto mt-5 max-w-5xl'>
-            {children}
-          </main>
+          <div className='mx-auto max-w-7xl flex gap-6 px-4 mt-6'>
+            <aside className='w-64 shrink-0 hidden md:block'>
+              <div className="sticky top-24">
+                <FeedList />
+              </div>
+            </aside>
+            <main className='flex-1 min-w-0'>
+              <Outlet />
+            </main>
+          </div>
           <Footer />
           <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
+            config={{ position: 'bottom-right' }}
             plugins={[
               {
                 name: 'Tanstack Router',

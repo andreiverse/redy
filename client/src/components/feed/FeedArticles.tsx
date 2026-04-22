@@ -2,7 +2,6 @@ import { $api } from "#/lib/api";
 import { type components } from "#/lib/api/v1";
 import { Link } from "@tanstack/react-router";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { CreateFeedDialog } from "./CreateFeedDialog";
 export function ArticleCard({
     article,
     sentimentScore
