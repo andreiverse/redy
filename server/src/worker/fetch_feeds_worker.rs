@@ -2,8 +2,8 @@ use async_nats::jetstream::{self};
 use chrono::{Duration, Utc};
 use reqwest::Url;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    Set, TryIntoModel,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Set,
+    TryIntoModel,
 };
 use std::result::Result::Ok;
 use tracing::{error, info};
@@ -79,7 +79,13 @@ pub async fn handle_feed(
                 let model = new_article.try_into_model().unwrap();
                 let url_str = &model.link;
 
-                if let Ok(url) = Url::parse(url_str) {
+                if !model.content_hash.is_empty() {
+                    info!(
+                        "New article discovered: {} ({}).",
+                        url_str, model.id
+                    );
+                    
+                } else if let Ok(url) = Url::parse(url_str) {
                     let host = url.host_str().unwrap_or("unknown").replace('.', "_");
                     let subject = format!("tasks.scrape.{}", host);
 

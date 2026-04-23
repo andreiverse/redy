@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
-import { $api } from '../lib/api'
+import { $api, baseUrl } from '../lib/api'
 import { Button } from './ui/button'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -19,9 +19,7 @@ export default function Header() {
   })
 
   const handleLogin = () => {
-    const backendApi = import.meta.env.VITE_BACKEND_API ?? "localhost:8080";
-    const baseUrl = backendApi.startsWith('http') ? backendApi : `http://${backendApi}`;
-    window.location.href = `${baseUrl}/auth/login?redirect_to_frontend=true`;
+   window.location.href = `${baseUrl}/auth/login?redirect_to_frontend=true`;
   }
 
   const handleLogout = () => {

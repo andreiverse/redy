@@ -5,17 +5,19 @@ mod entities;
 mod service;
 mod worker;
 
+use axum::http;
 #[cfg(feature = "dotenv")]
 use dotenv::dotenv;
 
 use async_nats::jetstream;
 use clap::{Parser, Subcommand};
 use migration::{Migrator, MigratorTrait};
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::process::exit;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::interval;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer, cookie};
 use tracing::{Level, info, warn};
 use tracing_subscriber::EnvFilter;
@@ -83,7 +85,8 @@ async fn main() -> Result<(), anyhow::Error> {
         dotenv().ok();
     }
 
-    let db_url = std::env::var("DATABASE_URL").unwrap_or("postgres://user:password@localhost:5432/my_app_db".to_string());
+    let db_url = std::env::var("DATABASE_URL")
+        .unwrap_or("postgres://user:password@localhost:5432/my_app_db".to_string());
     let mut opt = ConnectOptions::new(db_url);
 
     opt.sqlx_slow_statements_logging_settings(
@@ -140,7 +143,24 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let (_router, _api) = controller::create_controller().split_for_parts();
 
-    let cors = CorsLayer::very_permissive();
+    let cors = CorsLayer::new()
+        .allow_origin([std::env::var("FRONTEND_URL")
+            .unwrap_or("http://localhost:3000".to_owned())
+            .parse()
+            .unwrap()])
+        .allow_credentials(true)
+        .allow_methods([
+            http::Method::CONNECT,
+            http::Method::DELETE,
+            http::Method::GET,
+            http::Method::HEAD,
+            http::Method::OPTIONS,
+            http::Method::PATCH,
+            http::Method::POST,
+            http::Method::PUT,
+            http::Method::TRACE,
+        ])
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE]);
 
     let db_for_worker = db.clone();
     let js_worker = js.clone();
@@ -184,7 +204,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api))
         .with_state(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     info!("Listening on http://{}", addr);
     axum::serve(listener, app).await.unwrap();
