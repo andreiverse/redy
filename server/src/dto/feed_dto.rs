@@ -1,5 +1,5 @@
 use chrono::FixedOffset;
-use sea_orm::{ActiveEnum, prelude::Uuid};
+use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 

@@ -2,7 +2,7 @@ use async_nats::jetstream::{self};
 use chrono::{Duration, Utc};
 use reqwest::Url;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, ExprTrait, QueryFilter,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
     Set, TryIntoModel,
 };
 use std::result::Result::Ok;

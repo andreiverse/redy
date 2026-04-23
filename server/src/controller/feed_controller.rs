@@ -8,7 +8,7 @@ use axum::extract::Path;
 use axum::{Json, extract::State};
 use chrono::Utc;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelBehavior, ActiveModelTrait, EntityTrait, TryIntoModel};
+use sea_orm::{ActiveModelTrait, EntityTrait, TryIntoModel};
 use tower_sessions::Session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;

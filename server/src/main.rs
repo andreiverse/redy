@@ -10,6 +10,7 @@ use dotenv::dotenv;
 
 use async_nats::jetstream;
 use clap::{Parser, Subcommand};
+use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::process::exit;
 use std::{net::SocketAddr, time::Duration};
@@ -97,6 +98,8 @@ async fn main() -> Result<(), anyhow::Error> {
     let js = jetstream::new(client);
 
     let cli = Cli::parse();
+
+    Migrator::up(&db, None).await?;
 
     match cli.command {
         Commands::RunServer => {
