@@ -16,6 +16,13 @@ function ProfilePage() {
     retry: false,
   })
 
+  const { mutate: logout } = $api.useMutation('post', '/auth/logout', {
+    onSuccess: () => {
+      queryClient.clear()
+      navigate({ to: '/' })
+    }
+  })
+
   const { mutate: deleteAccount, isPending: isDeleting } = $api.useMutation('delete', '/auth/me', {
     onSuccess: () => {
       queryClient.clear()
@@ -51,6 +58,10 @@ function ProfilePage() {
         </Button>
       </div>
     )
+  }
+
+  const handleLogout = () => {
+    logout({})
   }
 
   const handleDeleteAccount = () => {
@@ -91,7 +102,18 @@ function ProfilePage() {
             <span className="text-xs font-mono text-[var(--sea-ink-muted)] sm:col-span-2">{user.id}</span>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col items-start gap-4 border-t border-[var(--line)] pt-6">
+        <CardFooter className="flex flex-col items-start gap-8 border-t border-[var(--line)] pt-6">
+          <div className="w-full">
+            <h3 className="text-sm font-bold text-[var(--sea-ink)] mb-2 uppercase tracking-wider">Account Actions</h3>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="w-full sm:w-auto border-[var(--chip-line)] text-[var(--sea-ink)] hover:bg-[var(--chip-bg)]"
+            >
+              Log out
+            </Button>
+          </div>
+
           <div className="w-full">
             <h3 className="text-sm font-bold text-red-500 mb-2 uppercase tracking-wider">Danger Zone</h3>
             <p className="text-xs text-[var(--sea-ink-muted)] mb-4">

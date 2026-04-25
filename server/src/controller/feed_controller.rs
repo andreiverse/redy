@@ -118,10 +118,41 @@ pub async fn feed_fetch_by_uuid(
     }
 }
 
+#[utoipa::path(
+    delete,
+    path = "/{feed_uuid}",
+    tag = "feed",
+    responses(
+        (status = 200, description = "Feed deleted successfully")
+    )
+)]
+pub async fn feed_delete(
+    State(state): State<AppState>,
+    session: Session,
+    Path(feed_uuid): Path<Uuid>,
+) -> Result<(), AppError> {
+    let user = state.auth_service.get_user_from_session(&session).await?;
+    let feed = feed::Entity::find_by_id(feed_uuid)
+        .one(&state.db)
+        .await?
+        .ok_or(AppError::NotFound("Feed not found".to_string()))?;
+
+    if feed.owner_uuid != Some(user.id) {
+        return Err(AppError::Forbidden("You do not own this feed".to_string()));
+    }
+
+    feed::Entity::delete_by_id(feed_uuid)
+        .exec(&state.db)
+        .await?;
+
+    Ok(())
+}
+
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(feed_get))
         .routes(routes!(feed_get_by_uuid))
         .routes(routes!(feed_post))
         .routes(routes!(feed_fetch_by_uuid))
+        .routes(routes!(feed_delete))
 }

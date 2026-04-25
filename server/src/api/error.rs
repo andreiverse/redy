@@ -16,6 +16,12 @@ pub enum AppError {
     #[error("Authentication failed: {0}")]
     Auth(String),
 
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    #[error("Forbidden: {0}")]
+    Forbidden(String),
+
     #[error("Database error: {0}")]
     Database(#[from] sea_orm::DbErr),
 }
@@ -31,6 +37,8 @@ impl IntoResponse for AppError {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             AppError::Auth(msg) => (StatusCode::UNAUTHORIZED, msg),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
             AppError::Database(_err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Database error".to_string(),

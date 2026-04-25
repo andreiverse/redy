@@ -158,7 +158,7 @@ export interface paths {
         get: operations["feed_get_by_uuid"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["feed_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -242,6 +242,8 @@ export interface components {
             /** Format: date-time */
             lastFetch?: string | null;
             name: string;
+            /** Format: uuid */
+            ownerUuid?: string | null;
             url: string;
         };
         /** @enum {string} */
@@ -549,6 +551,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["FeedDto"];
                 };
+            };
+        };
+    };
+    feed_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Feed deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

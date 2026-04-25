@@ -5,8 +5,9 @@ import { useMemo } from "react";
 import { Star, Compass, Heart, Hash } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { cn } from "#/lib/utils";
 
-export function FeedList() {
+export function FeedList({ className }: { className?: string }) {
   const queryClient = useQueryClient();
 
   const { data: user } = $api.useQuery('get', '/auth/me', undefined, {
@@ -51,7 +52,7 @@ export function FeedList() {
   const otherFeeds = allFeeds.filter(f => !favoriteIds.has(f.id));
 
   return (
-    <nav className="flex flex-col gap-6 h-[calc(100vh-8rem)] overflow-y-auto pr-2 custom-scrollbar">
+    <nav className={cn("flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar", className)}>
       {user && (
         <div>
           <div className="flex items-center justify-between mb-2 px-2">

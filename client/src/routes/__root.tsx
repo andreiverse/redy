@@ -48,8 +48,8 @@ function RootDocument() {
           <Header />
           <div className='mx-auto max-w-7xl flex gap-6 px-4 mt-6'>
             <aside className='w-64 shrink-0 hidden md:block'>
-              <div className="sticky top-24">
-                <FeedList />
+              <div className="sticky top-24 h-[calc(100vh-8rem)]">
+                <FeedList className="h-full" />
               </div>
             </aside>
             <main className='flex-1 min-w-0'>

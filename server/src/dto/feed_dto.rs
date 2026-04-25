@@ -16,6 +16,7 @@ pub struct FeedDto {
     pub default_language: String,
     pub created_at: chrono::DateTime<FixedOffset>,
     pub feed_type: FeedTypeDto,
+    pub owner_uuid: Option<Uuid>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -54,6 +55,7 @@ impl From<feed::Model> for FeedDto {
                 .last_fetch
                 .map(|lf| Utc::now().with_timezone(lf.offset()) - lf)
                 .map(|d| d.as_seconds_f64()),
+            owner_uuid: m.owner_uuid,
         }
     }
 }

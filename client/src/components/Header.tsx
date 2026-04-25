@@ -1,29 +1,15 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
 import { $api, baseUrl } from '../lib/api'
 import { Button } from './ui/button'
-import { useQueryClient } from '@tanstack/react-query'
 
 export default function Header() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { data: user, isLoading } = $api.useQuery('get', '/auth/me', undefined, {
     retry: false
   })
 
-  const { mutate: logout } = $api.useMutation('post', '/auth/logout', {
-    onSuccess: () => {
-      queryClient.clear()
-      navigate({ to: '/' })
-    }
-  })
-
   const handleLogin = () => {
    window.location.href = `${baseUrl}/auth/login?redirect_to_frontend=true`;
-  }
-
-  const handleLogout = () => {
-    logout({})
   }
 
   return (
@@ -53,28 +39,14 @@ export default function Header() {
               className="nav-link"
               activeProps={{ className: 'nav-link is-active' }}
             >
-              Profile
+              {user.username}
             </Link>
           )}
         </div>
 
         <div className="ml-auto flex items-center gap-4">
           {!isLoading && (
-            user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-[var(--sea-ink)]">
-                  {user.username}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleLogout}
-                  className="text-xs text-[var(--sea-ink)] hover:bg-[var(--chip-bg)]"
-                >
-                  Logout
-                </Button>
-              </div>
-            ) : (
+            !user && (
               <Button 
                 variant="outline" 
                 size="sm" 

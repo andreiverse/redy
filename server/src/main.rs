@@ -190,7 +190,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
         .with_same_site(cookie::SameSite::Lax)
-        .with_expiry(Expiry::OnInactivity(cookie::time::Duration::seconds(120)));
+        .with_expiry(Expiry::OnInactivity(cookie::time::Duration::days(2)));
     let api_router = controller::create_controller();
 
     let full_router = OpenApiRouter::new()
