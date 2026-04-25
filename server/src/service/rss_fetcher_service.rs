@@ -46,6 +46,7 @@ pub async fn rss_fetch(feed: &feed::Model) -> anyhow::Result<Vec<ArticleActiveMo
                 feed_description: Set(item.description().map(str::to_string)),
                 link: Set(link.clone()),
                 content_hash: Set(hash_link(&link)),
+                html_content_from_feed: Set(item.content().is_some()),
                 html_content: Set(item.content().map(|f| f.to_owned())),
                 status: Set(ArticleStatus::Pending),
                 published_at: Set(published_at),

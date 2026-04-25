@@ -22,6 +22,16 @@ export function ArticleCard({
 }
 
 export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
+    const feedQuery = $api.useQuery("get", "/feed/{feed_uuid}", {
+        params: {
+            path: {
+                feed_uuid: feedUuid || ""
+            }
+        }
+    }, {
+        enabled: !!feedUuid
+    });
+
     const feedsQuery = $api.useQuery("get", "/articles", {
         params: {
             query: { feed_uuid: feedUuid }
@@ -42,6 +52,14 @@ export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
 
     return <>
         <div>
+            {
+                feedQuery.data && <div className="mb-4">
+                    <p>Feed name: {feedQuery.data.name}</p>
+                    <p>Source link: {feedQuery.data.url}</p>
+                    <p>Last fetch: {feedQuery.data.fetchedSecondsAgo ? feedQuery.data.fetchedSecondsAgo.toFixed(2) + ' seconds ago' : "never"}</p>
+                </div>
+            }
+
             <div className="space-y-2">
                 {
                     sorted.map(article => <ArticleCard key={article.article.link} sentimentScore={article.sentimentScore} article={article.article} />)

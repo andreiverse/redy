@@ -165,8 +165,8 @@ async fn main() -> Result<(), anyhow::Error> {
     let db_for_worker = db.clone();
     let js_worker = js.clone();
     tokio::spawn(async move {
-        let mut ticker = interval(Duration::from_secs(10 * 60));
-        info!("Fetching feed articles every 10 minutes...");
+        let mut ticker = interval(Duration::from_secs(60));
+        info!("Fetching feed articles every 1 minute...");
         loop {
             ticker.tick().await;
             if let Err(e) = fetch_feeds_task(&db_for_worker, &js_worker).await {

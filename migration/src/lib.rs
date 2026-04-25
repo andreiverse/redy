@@ -18,6 +18,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260415_071631_create_user_table::Migration),
             Box::new(m20260420_191609_add_feed_ownera::Migration),
             Box::new(m20260422_183751_add_user_feed_favorites::Migration),
+            Box::new(m20260425_160859_add_attribute_fetched_from_feed_html_content::Migration),
         ]
     }
 }
@@ -32,3 +33,4 @@ mod m20260407_193740_add_article_language;
 mod m20260415_071631_create_user_table;
 mod m20260420_191609_add_feed_ownera;
 mod m20260422_183751_add_user_feed_favorites;
+mod m20260425_160859_add_attribute_fetched_from_feed_html_content;

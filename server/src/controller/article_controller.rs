@@ -62,6 +62,7 @@ pub async fn article_get(
         .column(article::Column::Language)
         .column(article::Column::FetchedAt)
         .column(article::Column::ContentHash)
+        .column(article::Column::HtmlContentFromFeed)
         .limit(50)
         .find_also_related(entities::article_data::Entity);
 

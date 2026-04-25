@@ -1,4 +1,4 @@
-use chrono::FixedOffset;
+use chrono::{FixedOffset, Utc};
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -9,6 +9,8 @@ use crate::entities::{feed, sea_orm_active_enums::FeedType};
 #[serde(rename_all = "camelCase")]
 pub struct FeedDto {
     pub id: Uuid,
+    pub last_fetch: Option<chrono::DateTime<FixedOffset>>,
+    pub fetched_seconds_ago: Option<f64>,
     pub url: String,
     pub name: String,
     pub default_language: String,
@@ -21,7 +23,6 @@ pub struct FeedDto {
 pub enum FeedTypeDto {
     Rss,
 }
-
 
 impl From<FeedType> for FeedTypeDto {
     fn from(dto: FeedType) -> Self {
@@ -48,6 +49,11 @@ impl From<feed::Model> for FeedDto {
             default_language: m.default_language,
             created_at: m.created_at,
             feed_type: m.feed_type.into(),
+            last_fetch: m.last_fetch,
+            fetched_seconds_ago: m
+                .last_fetch
+                .map(|lf| Utc::now().with_timezone(lf.offset()) - lf)
+                .map(|d| d.as_seconds_f64()),
         }
     }
 }

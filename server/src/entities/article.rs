@@ -21,6 +21,7 @@ pub struct Model {
     pub published_at: Option<DateTimeWithTimeZone>,
     pub fetched_at: DateTimeWithTimeZone,
     pub language: String,
+    pub html_content_from_feed: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

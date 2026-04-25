@@ -235,8 +235,12 @@ export interface components {
             createdAt: string;
             defaultLanguage: string;
             feedType: components["schemas"]["FeedTypeDto"];
+            /** Format: double */
+            fetchedSecondsAgo?: number | null;
             /** Format: uuid */
             id: string;
+            /** Format: date-time */
+            lastFetch?: string | null;
             name: string;
             url: string;
         };
