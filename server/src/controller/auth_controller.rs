@@ -97,6 +97,8 @@ pub async fn callback(
         .authenticate(query.code, nonce, pkce_verifier)
         .await?;
 
+    crate::metrics::record_login();
+
     session.insert("user_id", user.id).await.unwrap();
 
     let redirect_to_frontend: Option<bool> = session.get("redirect_to_frontend").await.unwrap();

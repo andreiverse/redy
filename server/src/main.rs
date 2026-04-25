@@ -4,12 +4,14 @@ mod dto;
 mod entities;
 mod service;
 mod worker;
+mod metrics;
 
 use axum::http;
 #[cfg(feature = "dotenv")]
 use dotenv::dotenv;
 
 use async_nats::jetstream;
+use axum::middleware;
 use clap::{Parser, Subcommand};
 use migration::{Migrator, MigratorTrait};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
@@ -186,6 +188,10 @@ async fn main() -> Result<(), anyhow::Error> {
         frontend_url: std::env::var("FRONTEND_URL").unwrap_or("http://localhost:3000".to_string()),
     };
 
+    let recorder_handle = metrics::init_prometheus();
+    let metrics_addr = SocketAddr::from(([0, 0, 0, 0], 9091));
+    tokio::spawn(metrics::start_metrics_server(metrics_addr, recorder_handle));
+
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
@@ -195,6 +201,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let full_router = OpenApiRouter::new()
         .merge(api_router)
+        .layer(middleware::from_fn(metrics::middleware::track_metrics))
         .layer(session_layer)
         .layer(cors);
 

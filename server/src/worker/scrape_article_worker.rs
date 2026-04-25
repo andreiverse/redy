@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use async_nats::jetstream::{self, stream};
 use sea_orm::{
@@ -8,7 +8,7 @@ use tokio_stream::StreamExt;
 use tracing::{error, info};
 use uuid::Uuid;
 
-use crate::{entities::article, service::article_parser_service};
+use crate::{entities::article, service::article_parser_service, metrics};
 
 pub enum HandleResult {
     Success,
@@ -64,6 +64,7 @@ pub async fn scrape_article_worker(
     info!("Scraper worker started. Waiting for messages...");
 
     while let Some(Ok(msg)) = messages.next().await {
+        let start = Instant::now();
         let article_uuid = match Uuid::from_slice(&msg.payload) {
             Ok(uuid) => uuid,
             Err(e) => {
@@ -71,6 +72,7 @@ pub async fn scrape_article_worker(
                 if let Err(e) = msg.ack().await {
                     error!("Failed to ack invalid message: {}", e);
                 }
+                metrics::record_worker_task("scrape_article", false, start.elapsed());
                 continue; // skip processing
             }
         };
@@ -95,14 +97,17 @@ pub async fn scrape_article_worker(
                     msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(30 * 60))))
                         .await
                         .ok();
+                    metrics::record_worker_task("scrape_article", false, start.elapsed());
                 } else {
                     msg.ack().await.ok();
+                    metrics::record_worker_task("scrape_article", true, start.elapsed());
                 }
             }
 
             Ok(HandleResult::NotFound) => {
                 error!("Article not found, dropping message: {}", article_uuid);
                 msg.ack().await.ok();
+                metrics::record_worker_task("scrape_article", true, start.elapsed());
             }
 
             Err(err) => {
@@ -111,6 +116,7 @@ pub async fn scrape_article_worker(
                 msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(24 * 60 * 60))))
                     .await
                     .ok();
+                metrics::record_worker_task("scrape_article", false, start.elapsed());
             }
         }
     }

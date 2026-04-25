@@ -35,6 +35,7 @@ COPY --from=builder /app/target/release/redy /app/redy
 
 # Expose the application port
 EXPOSE 8080
+EXPOSE 9091
 
 # Run the application
 ENTRYPOINT ["/app/redy", "run-server"]

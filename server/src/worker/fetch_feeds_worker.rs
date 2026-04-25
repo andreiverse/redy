@@ -6,17 +6,20 @@ use sea_orm::{
     TryIntoModel,
 };
 use std::result::Result::Ok;
+use std::time::Instant;
 use tracing::{error, info};
 
 use crate::{
     entities::{article, feed},
     service::rss_fetcher_service,
+    metrics,
 };
 
 pub async fn fetch_feeds_task(
     db: &DatabaseConnection,
     jetstream_context: &jetstream::Context,
 ) -> Result<(), anyhow::Error> {
+    let start = Instant::now();
     // Only get feeds that haven't been fetched in the last minute (or never)
     let one_minute_ago = Utc::now() - Duration::minutes(1);
 
@@ -29,6 +32,7 @@ pub async fn fetch_feeds_task(
         .all(db)
         .await?;
 
+    let mut success = true;
     for feed in feeds {
         // TODO: difference between last try and last successful fetch
         let mut active_feed: feed::ActiveModel = feed.clone().into();
@@ -36,13 +40,17 @@ pub async fn fetch_feeds_task(
 
         if let Err(e) = active_feed.update(db).await {
             error!("Failed to update last_fetch for feed {}: {:?}", feed.id, e);
+            success = false;
             continue;
         }
 
         if let Err(e) = handle_feed(db, jetstream_context, &feed).await {
             error!("Error processing feed {}: {:?}", feed.url, e);
+            success = false;
         }
     }
+
+    metrics::record_worker_task("fetch_feeds", success, start.elapsed());
 
     Ok(())
 }
