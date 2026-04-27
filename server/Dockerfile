@@ -24,10 +24,11 @@ COPY migration/ migration/
 RUN cargo build --release --bin redy
 
 # Stage 4: Runtime
-FROM debian:bookworm-slim AS runtime
+FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    chromium \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the binary from the builder
@@ -36,6 +37,9 @@ COPY --from=builder /app/target/release/redy /app/redy
 # Expose the application port
 EXPOSE 8080
 EXPOSE 9091
+
+# Set the chromium path for chromiumoxide
+ENV CHROME=/usr/bin/chromium
 
 # Run the application
 ENTRYPOINT ["/app/redy", "run-server"]

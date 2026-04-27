@@ -19,7 +19,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::process::exit;
 use std::{net::SocketAddr, time::Duration};
 use tokio::time::interval;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer, cookie};
 use tracing::{Level, info, warn};
 use tracing_subscriber::EnvFilter;
