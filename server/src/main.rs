@@ -192,18 +192,41 @@ async fn main() -> Result<(), anyhow::Error> {
     let metrics_addr = SocketAddr::from(([0, 0, 0, 0], 9091));
     tokio::spawn(metrics::start_metrics_server(metrics_addr, recorder_handle));
 
-    let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(false)
-        .with_same_site(cookie::SameSite::Lax)
-        .with_expiry(Expiry::OnInactivity(cookie::time::Duration::days(2)));
     let api_router = controller::create_controller();
 
-    let full_router = OpenApiRouter::new()
+    let mut full_router = OpenApiRouter::new()
         .merge(api_router)
-        .layer(middleware::from_fn(metrics::middleware::track_metrics))
-        .layer(session_layer)
-        .layer(cors);
+        .layer(middleware::from_fn(metrics::middleware::track_metrics));
+
+    if let Ok(redis_url) = std::env::var("REDIS_URL") {
+        use tower_sessions_redis_store::fred::interfaces::ClientLike;
+        info!("Using Redis for session storage: {}", redis_url);
+        let config = tower_sessions_redis_store::fred::prelude::Config::from_url(&redis_url)
+            .expect("Invalid REDIS_URL");
+        let pool = tower_sessions_redis_store::fred::prelude::Pool::new(config, None, None, None, 6)
+            .expect("Failed to create Redis pool");
+        pool.connect();
+        pool.wait_for_connect()
+            .await
+            .expect("Failed to connect to Redis");
+
+        let session_store = tower_sessions_redis_store::RedisStore::new(pool);
+        let session_layer = SessionManagerLayer::new(session_store)
+            .with_secure(false)
+            .with_same_site(cookie::SameSite::Lax)
+            .with_expiry(Expiry::OnInactivity(cookie::time::Duration::days(2)));
+        full_router = full_router.layer(session_layer);
+    } else {
+        info!("Using MemoryStore for session storage");
+        let session_store = MemoryStore::default();
+        let session_layer = SessionManagerLayer::new(session_store)
+            .with_secure(false)
+            .with_same_site(cookie::SameSite::Lax)
+            .with_expiry(Expiry::OnInactivity(cookie::time::Duration::days(2)));
+        full_router = full_router.layer(session_layer);
+    };
+
+    let full_router = full_router.layer(cors);
 
     let (router, api) = full_router.split_for_parts();
 

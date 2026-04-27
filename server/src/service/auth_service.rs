@@ -158,6 +158,8 @@ impl AuthService {
                 id: Set(Uuid::new_v4()),
                 email: Set(email),
                 username: Set(username),
+                is_admin: Set(false),
+                can_create_feeds: Set(false)
             };
             let user = new_user.insert(&self.db).await?;
             Ok(user)

@@ -1,18 +1,23 @@
 use crate::api::error::AppError;
 use crate::dto::article_dto::ArticleDto;
-use crate::dto::feed_dto::CreateFeedDto;
+use crate::dto::feed_dto::{CreateFeedDto, UpdateFeedDto};
 use crate::entities::feed;
 use crate::service::rss_fetcher_service::rss_fetch;
 use crate::{AppState, dto::feed_dto::FeedDto};
-use axum::extract::Path;
+use axum::extract::{Path, Query};
 use axum::{Json, extract::State};
 use chrono::Utc;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, EntityTrait, TryIntoModel};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, TryIntoModel};
 use tower_sessions::Session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 use uuid::Uuid;
+
+#[derive(serde::Deserialize, utoipa::IntoParams)]
+pub struct FeedFilters {
+    pub user_id: Option<Uuid>,
+}
 
 #[utoipa::path(
     post,
@@ -29,6 +34,10 @@ pub async fn feed_post(
     Json(payload): Json<CreateFeedDto>,
 ) -> Result<Json<FeedDto>, AppError> {
     let user = state.auth_service.get_user_from_session(&session).await?;
+
+    if !user.can_create_feeds {
+        return Err(AppError::Forbidden("You can't create feeds".to_owned()));
+    }
 
     let feed_ent = feed::ActiveModel {
         id: Set(Uuid::new_v4()),
@@ -53,14 +62,33 @@ pub async fn feed_post(
     get,
     path = "/",
     tag = "feed",
+    params(
+        FeedFilters
+    ),
     responses(
         (status=200, body=Vec<FeedDto>)
     )
 )]
-pub async fn feed_get(State(state): State<AppState>) -> Json<Vec<FeedDto>> {
-    let feeds = feed::Entity::find().all(&state.db).await.unwrap();
+pub async fn feed_get(
+    State(state): State<AppState>,
+    session: Session,
+    Query(filters): Query<FeedFilters>,
+) -> Result<Json<Vec<FeedDto>>, AppError> {
+    let mut query = feed::Entity::find();
 
-    Json(feeds.into_iter().map(FeedDto::from).collect())
+    if let Some(user_id) = filters.user_id {
+        let user = state.auth_service.get_user_from_session(&session).await?;
+        if !user.is_admin && user.id != user_id {
+            return Err(AppError::Forbidden(
+                "You can only view your own feeds".to_owned(),
+            ));
+        }
+        query = query.filter(feed::Column::OwnerUuid.eq(user_id));
+    }
+
+    let feeds = query.all(&state.db).await?;
+
+    Ok(Json(feeds.into_iter().map(FeedDto::from).collect()))
 }
 
 #[utoipa::path(
@@ -119,6 +147,60 @@ pub async fn feed_fetch_by_uuid(
 }
 
 #[utoipa::path(
+    patch,
+    path = "/{feed_uuid}",
+    tag = "feed",
+    request_body = UpdateFeedDto,
+    responses(
+        (status = 200, body = FeedDto)
+    )
+)]
+pub async fn feed_patch(
+    State(state): State<AppState>,
+    session: Session,
+    Path(feed_uuid): Path<Uuid>,
+    Json(payload): Json<UpdateFeedDto>,
+) -> Result<Json<FeedDto>, AppError> {
+    let user = state.auth_service.get_user_from_session(&session).await?;
+    let feed = feed::Entity::find_by_id(feed_uuid)
+        .one(&state.db)
+        .await?
+        .ok_or(AppError::NotFound("Feed not found".to_string()))?;
+
+    if feed.owner_uuid != Some(user.id) && !user.is_admin {
+        return Err(AppError::Forbidden("You do not own this feed".to_string()));
+    }
+
+    let mut active_feed = feed.into_active_model();
+
+    if let Some(url) = payload.url {
+        active_feed.url = Set(url);
+    }
+    if let Some(name) = payload.name {
+        active_feed.name = Set(name);
+    }
+    if let Some(default_language) = payload.default_language {
+        active_feed.default_language = Set(default_language);
+    }
+    if let Some(feed_type) = payload.feed_type {
+        active_feed.feed_type = Set(feed_type.into());
+    }
+
+    if let Some(owner_uuid) = payload.owner_uuid {
+        if !user.is_admin {
+            return Err(AppError::Forbidden(
+                "Only admins can change the owner of a feed".to_string(),
+            ));
+        }
+        active_feed.owner_uuid = Set(owner_uuid);
+    }
+
+    let feed = active_feed.update(&state.db).await?;
+
+    Ok(Json(FeedDto::from(feed)))
+}
+
+#[utoipa::path(
     delete,
     path = "/{feed_uuid}",
     tag = "feed",
@@ -137,7 +219,7 @@ pub async fn feed_delete(
         .await?
         .ok_or(AppError::NotFound("Feed not found".to_string()))?;
 
-    if feed.owner_uuid != Some(user.id) {
+    if feed.owner_uuid != Some(user.id) && !user.is_admin {
         return Err(AppError::Forbidden("You do not own this feed".to_string()));
     }
 
@@ -154,5 +236,6 @@ pub fn router() -> OpenApiRouter<AppState> {
         .routes(routes!(feed_get_by_uuid))
         .routes(routes!(feed_post))
         .routes(routes!(feed_fetch_by_uuid))
+        .routes(routes!(feed_patch))
         .routes(routes!(feed_delete))
 }

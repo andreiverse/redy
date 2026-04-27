@@ -87,7 +87,7 @@ pub async fn handle_feed(
                 let model = new_article.try_into_model().unwrap();
                 let url_str = &model.link;
 
-                if !model.content_hash.is_empty() {
+                if model.html_content.is_some() {
                     info!(
                         "New article discovered: {} ({}).",
                         url_str, model.id

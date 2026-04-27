@@ -161,7 +161,7 @@ export interface paths {
         delete: operations["feed_delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["feed_patch"];
         trace?: never;
     };
     "/feed/{feed_uuid}/fetch": {
@@ -194,6 +194,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["user_get_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["user_get_by_id"];
+        put?: never;
+        post?: never;
+        delete: operations["user_delete"];
+        options?: never;
+        head?: never;
+        patch: operations["user_patch"];
         trace?: never;
     };
 }
@@ -252,10 +284,24 @@ export interface components {
             html_content: string;
             title: string;
         };
+        UpdateFeedDto: {
+            defaultLanguage?: string | null;
+            feedType?: null | components["schemas"]["FeedTypeDto"];
+            name?: string | null;
+            /** Format: uuid */
+            ownerUuid?: string | null;
+            url?: string | null;
+        };
+        UpdateUserDto: {
+            canCreateFeeds?: boolean | null;
+            isAdmin?: boolean | null;
+        };
         UserDto: {
+            canCreateFeeds: boolean;
             email: string;
             /** Format: uuid */
             id: string;
+            isAdmin: boolean;
             username: string;
         };
     };
@@ -493,7 +539,9 @@ export interface operations {
     };
     feed_get: {
         parameters: {
-            query?: never;
+            query?: {
+                user_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -574,6 +622,31 @@ export interface operations {
             };
         };
     };
+    feed_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFeedDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto"];
+                };
+            };
+        };
+    };
     feed_fetch_by_uuid: {
         parameters: {
             query?: never;
@@ -612,6 +685,91 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HtmlArticle"];
+                };
+            };
+        };
+    };
+    user_get_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDto"][];
+                };
+            };
+        };
+    };
+    user_get_by_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDto"];
+                };
+            };
+        };
+    };
+    user_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    user_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDto"];
                 };
             };
         };

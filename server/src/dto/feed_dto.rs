@@ -19,7 +19,7 @@ pub struct FeedDto {
     pub owner_uuid: Option<Uuid>,
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum FeedTypeDto {
     Rss,
@@ -67,4 +67,14 @@ pub struct CreateFeedDto {
     pub name: String,
     pub default_language: String,
     pub feed_type: FeedTypeDto,
+}
+
+#[derive(Serialize, ToSchema, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateFeedDto {
+    pub url: Option<String>,
+    pub name: Option<String>,
+    pub default_language: Option<String>,
+    pub feed_type: Option<FeedTypeDto>,
+    pub owner_uuid: Option<Option<Uuid>>,
 }

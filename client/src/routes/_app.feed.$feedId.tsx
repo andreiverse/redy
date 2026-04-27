@@ -1,7 +1,7 @@
 import { FeedArticleList } from '#/components/feed/FeedArticles';
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/feed/$feedId')({
+export const Route = createFileRoute('/_app/feed/$feedId')({
   component: FeedView
 })
 

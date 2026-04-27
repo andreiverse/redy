@@ -1,16 +1,20 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { $api } from '#/lib/api'
-import { Heart } from 'lucide-react'
+import { $api, baseUrl } from '#/lib/api'
+import { Heart, LogIn } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { FeedList } from '#/components/feed/FeedList'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_app/')({
   component: Index
 })
 
 function Index() {
   const { data: user } = $api.useQuery('get', '/auth/me', undefined, { retry: false })
   const { data: favorites } = $api.useQuery('get', '/favorites', undefined, { enabled: !!user })
+
+  const handleLogin = () => {
+    window.location.href = `${baseUrl}/auth/login?redirect_to_frontend=true`;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 py-8">
@@ -24,8 +28,8 @@ function Index() {
       <div className="flex flex-col sm:flex-row gap-4">
         {user ? (
           favorites && favorites.length > 0 ? (
-            <Button asChild size="lg" className="hidden md:flex">
-              <Link to="/feed/$feedId" params={{ feedId: favorites[0].id }}>
+            <Button variant="link" asChild size="lg" className="flex">
+              <Link to="/feed/$feedId" params={{ feedId: favorites[0].id }} className="no-underline text-inherit hover:text-inherit">
                 <Heart className="mr-2 size-4 fill-current" />
                 Go to your first favorite
               </Link>
@@ -36,8 +40,14 @@ function Index() {
             </div>
           )
         ) : (
-          <div className="text-muted-foreground hidden md:block">
-            Login to see your favorites and personalized feeds
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Login to see your favorites and personalized feeds
+            </p>
+            <Button size="lg" onClick={handleLogin}>
+              <LogIn className="mr-2 size-4" />
+              Login
+            </Button>
           </div>
         )}
       </div>

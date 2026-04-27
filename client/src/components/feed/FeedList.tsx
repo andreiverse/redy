@@ -59,7 +59,7 @@ export function FeedList({ className }: { className?: string }) {
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Heart className="size-3 text-red-500" /> Favorites
             </h2>
-            <CreateFeedDialog />
+            {user.canCreateFeeds && <CreateFeedDialog />}
           </div>
           <div className="space-y-1">
             {favorites.length > 0 ? (

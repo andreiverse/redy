@@ -41,7 +41,10 @@ pub async fn login(
 ) -> Result<Redirect, AppError> {
     let (auth_url, csrf_token, nonce, pkce_verifier) = state.auth_service.get_auth_url();
 
-    session.insert("csrf_token", csrf_token).await.unwrap();
+    session
+        .insert("csrf_token", csrf_token.secret().to_string())
+        .await
+        .unwrap();
     session.insert("nonce", nonce).await.unwrap();
     session
         .insert("pkce_verifier", pkce_verifier)

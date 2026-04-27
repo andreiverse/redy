@@ -42,6 +42,15 @@ export default function Header() {
               {user.username}
             </Link>
           )}
+          {user?.isAdmin && (
+            <Link
+              to="/admin"
+              className="nav-link text-[var(--sea-ink)] hover:text-[var(--sea-ink-hover)]"
+              activeProps={{ className: 'nav-link is-active' }}
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         <div className="ml-auto flex items-center gap-4">

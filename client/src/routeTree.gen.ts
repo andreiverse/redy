@@ -9,104 +9,231 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ReaderRouteImport } from './routes/reader'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as FeedFeedIdRouteImport } from './routes/feed.$feedId'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminFeedsRouteImport } from './routes/admin.feeds'
+import { Route as AppReaderRouteImport } from './routes/_app.reader'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppFeedFeedIdRouteImport } from './routes/_app.feed.$feedId'
 
-const ReaderRoute = ReaderRouteImport.update({
-  id: '/reader',
-  path: '/reader',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AdminRoute,
 } as any)
-const FeedFeedIdRoute = FeedFeedIdRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFeedsRoute = AdminFeedsRouteImport.update({
+  id: '/feeds',
+  path: '/feeds',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AppReaderRoute = AppReaderRouteImport.update({
+  id: '/reader',
+  path: '/reader',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeedFeedIdRoute = AppFeedFeedIdRouteImport.update({
   id: '/feed/$feedId',
   path: '/feed/$feedId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/reader': typeof ReaderRoute
-  '/feed/$feedId': typeof FeedFeedIdRoute
+  '/': typeof AppIndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/profile': typeof AppProfileRoute
+  '/reader': typeof AppReaderRoute
+  '/admin/feeds': typeof AdminFeedsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
+  '/feed/$feedId': typeof AppFeedFeedIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/reader': typeof ReaderRoute
-  '/feed/$feedId': typeof FeedFeedIdRoute
+  '/profile': typeof AppProfileRoute
+  '/reader': typeof AppReaderRoute
+  '/admin/feeds': typeof AdminFeedsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/': typeof AppIndexRoute
+  '/admin': typeof AdminIndexRoute
+  '/feed/$feedId': typeof AppFeedFeedIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/profile': typeof ProfileRoute
-  '/reader': typeof ReaderRoute
-  '/feed/$feedId': typeof FeedFeedIdRoute
+  '/_app': typeof AppRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/reader': typeof AppReaderRoute
+  '/admin/feeds': typeof AdminFeedsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/_app/': typeof AppIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/_app/feed/$feedId': typeof AppFeedFeedIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/reader' | '/feed/$feedId'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/profile'
+    | '/reader'
+    | '/admin/feeds'
+    | '/admin/users'
+    | '/admin/'
+    | '/feed/$feedId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/reader' | '/feed/$feedId'
-  id: '__root__' | '/' | '/profile' | '/reader' | '/feed/$feedId'
+  to:
+    | '/profile'
+    | '/reader'
+    | '/admin/feeds'
+    | '/admin/users'
+    | '/'
+    | '/admin'
+    | '/feed/$feedId'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/admin'
+    | '/_app/profile'
+    | '/_app/reader'
+    | '/admin/feeds'
+    | '/admin/users'
+    | '/_app/'
+    | '/admin/'
+    | '/_app/feed/$feedId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ProfileRoute: typeof ProfileRoute
-  ReaderRoute: typeof ReaderRoute
-  FeedFeedIdRoute: typeof FeedFeedIdRoute
+  AppRoute: typeof AppRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reader': {
-      id: '/reader'
-      path: '/reader'
-      fullPath: '/reader'
-      preLoaderRoute: typeof ReaderRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/feed/$feedId': {
-      id: '/feed/$feedId'
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/feeds': {
+      id: '/admin/feeds'
+      path: '/feeds'
+      fullPath: '/admin/feeds'
+      preLoaderRoute: typeof AdminFeedsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_app/reader': {
+      id: '/_app/reader'
+      path: '/reader'
+      fullPath: '/reader'
+      preLoaderRoute: typeof AppReaderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/feed/$feedId': {
+      id: '/_app/feed/$feedId'
       path: '/feed/$feedId'
       fullPath: '/feed/$feedId'
-      preLoaderRoute: typeof FeedFeedIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppFeedFeedIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppProfileRoute: typeof AppProfileRoute
+  AppReaderRoute: typeof AppReaderRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppFeedFeedIdRoute: typeof AppFeedFeedIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppProfileRoute: AppProfileRoute,
+  AppReaderRoute: AppReaderRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppFeedFeedIdRoute: AppFeedFeedIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AdminRouteChildren {
+  AdminFeedsRoute: typeof AdminFeedsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminFeedsRoute: AdminFeedsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ProfileRoute: ProfileRoute,
-  ReaderRoute: ReaderRoute,
-  FeedFeedIdRoute: FeedFeedIdRoute,
+  AppRoute: AppRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

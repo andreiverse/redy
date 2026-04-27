@@ -18,6 +18,10 @@ import { useQueryClient } from "@tanstack/react-query";
 export function CreateFeedDialog() {
   const queryClient = useQueryClient();
 
+  const { data: user } = $api.useQuery('get', '/auth/me', undefined, {
+    retry: false
+  });
+
   const [open, setOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -42,6 +46,11 @@ export function CreateFeedDialog() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!user?.canCreateFeeds) {
+      alert("You do not have permission to create feeds.");
+      return;
+    }
+
     await createFeedMutation.mutateAsync({
       body: {
         url: form.url,
@@ -54,6 +63,10 @@ export function CreateFeedDialog() {
     await queryClient.invalidateQueries(
       $api.queryOptions("get", "/feed")
     );
+  }
+
+  if (user && !user.canCreateFeeds) {
+    return null;
   }
 
   return (

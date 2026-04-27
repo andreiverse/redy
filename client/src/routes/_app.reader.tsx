@@ -6,7 +6,7 @@ const searchSchema = z.object({
   article_uuid: z.string(),
 })
 
-export const Route = createFileRoute('/reader')({
+export const Route = createFileRoute('/_app/reader')({
   component: RouteComponent,
   validateSearch: searchSchema
 })

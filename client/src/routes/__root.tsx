@@ -8,7 +8,6 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
 import Header from '../components/Header'
-import { FeedList } from '../components/feed/FeedList'
 
 import TanStackQueryProvider from '../integrations/tanstack-query/root-provider'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
@@ -46,15 +45,8 @@ function RootDocument() {
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
         <TanStackQueryProvider>
           <Header />
-          <div className='mx-auto max-w-7xl flex gap-6 px-4 mt-6'>
-            <aside className='w-64 shrink-0 hidden md:block'>
-              <div className="sticky top-24 h-[calc(100vh-8rem)]">
-                <FeedList className="h-full" />
-              </div>
-            </aside>
-            <main className='flex-1 min-w-0'>
-              <Outlet />
-            </main>
+          <div className='mx-auto max-w-7xl px-4 mt-6'>
+            <Outlet />
           </div>
           <Footer />
           <TanStackDevtools

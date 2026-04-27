@@ -10,6 +10,8 @@ pub struct UserDto {
     pub id: Uuid,
     pub email: String,
     pub username: String,
+    pub is_admin: bool,
+    pub can_create_feeds: bool,
 }
 
 impl From<user::Model> for UserDto {
@@ -18,6 +20,15 @@ impl From<user::Model> for UserDto {
             id: m.id,
             email: m.email,
             username: m.username,
+            is_admin: m.is_admin,
+            can_create_feeds: m.can_create_feeds,
         }
     }
+}
+
+#[derive(serde::Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateUserDto {
+    pub is_admin: Option<bool>,
+    pub can_create_feeds: Option<bool>,
 }

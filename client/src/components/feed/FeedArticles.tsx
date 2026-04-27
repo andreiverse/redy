@@ -69,7 +69,7 @@ export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
         (a, b) => new Date(b.article.publishedAt ?? Date.now()).getTime() - new Date(a.article.publishedAt ?? Date.now()).getTime()
     );
 
-    const isOwner = user && feedQuery.data && feedQuery.data.ownerUuid === user.id;
+    const canManage = user && feedQuery.data && (feedQuery.data.ownerUuid === user.id || user.isAdmin);
 
     const handleDelete = () => {
         if (feedUuid && window.confirm("Are you sure you want to delete this feed?")) {
@@ -94,7 +94,7 @@ export function FeedArticleList({ feedUuid }: { feedUuid: string | null }) {
                             Last fetch: {feedQuery.data.fetchedSecondsAgo ? feedQuery.data.fetchedSecondsAgo.toFixed(2) + ' seconds ago' : "never"}
                         </p>
                     </div>
-                    {isOwner && (
+                    {canManage && (
                         <Button 
                             variant="destructive" 
                             size="icon" 

@@ -12,6 +12,8 @@ pub struct Model {
     pub email: String,
     #[sea_orm(unique)]
     pub username: String,
+    pub is_admin: bool,
+    pub can_create_feeds: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
