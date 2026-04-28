@@ -24,7 +24,7 @@ COPY migration/ migration/
 RUN cargo build --release --bin redy
 
 # Stage 4: Runtime
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
