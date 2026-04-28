@@ -17,6 +17,7 @@ pub struct Model {
     pub name: String,
     pub default_language: String,
     pub owner_uuid: Option<Uuid>,
+    pub category: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

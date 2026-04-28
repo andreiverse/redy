@@ -1,11 +1,9 @@
 import uuid
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
 import repository
 import utils
+import model
 
-nltk.download('vader_lexicon')
-sia = SentimentIntensityAnalyzer()
+SENTIMENT_LABELS = ["positive", "negative"]
 
 def handle_sentimental_analysis(article_uuid: uuid.UUID) -> utils.Status:
     article = repository.get_article_by_uuid(article_uuid)
@@ -26,14 +24,20 @@ def handle_sentimental_analysis(article_uuid: uuid.UUID) -> utils.Status:
 
     text_content = utils.extract_text_from_html_content(html_content)
     
-    pol_scores = sia.polarity_scores(text_content)
+    # We use the same zero-shot model for sentiment
+    result = model.classify(text_content, SENTIMENT_LABELS)
+    
+    # Calculate a score between -1 and 1
+    # labels are sorted by score in result['labels'] and result['scores']
+    scores_dict = dict(zip(result['labels'], result['scores']))
+    sentiment_score = scores_dict['positive'] - scores_dict['negative']
 
     db_status = repository.upsert_article_data_unsafe(
         article_id=article_uuid, 
-        sentiment_score=pol_scores["compound"]
+        sentiment_score=float(sentiment_score)
     )
 
-    print(f"Calculated successfully sentimental score {pol_scores["compound"]} for {article_uuid}")
+    print(f"Calculated successfully sentimental score {sentiment_score:.2f} for {article_uuid}")
 
     if db_status:
         return utils.Status.SUCCESS

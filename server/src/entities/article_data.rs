@@ -10,6 +10,7 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(column_type = "Double", nullable)]
     pub sentiment_score: Option<f64>,
+    pub category: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

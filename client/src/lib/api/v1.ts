@@ -253,6 +253,7 @@ export interface components {
         ArticleStatusDto: "pending" | "extracted" | "extractionFailed" | "done";
         ArticleWithDataDto: {
             article: components["schemas"]["ArticleDto"];
+            category?: string | null;
             /** Format: double */
             sentimentScore?: number | null;
         };

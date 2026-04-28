@@ -8,7 +8,11 @@ use tokio_stream::StreamExt;
 use tracing::{error, info};
 use uuid::Uuid;
 
-use crate::{entities::article, service::article_parser_service, metrics};
+use crate::{
+    entities::article,
+    metrics,
+    service::{article_parser_service, worker_service},
+};
 
 pub enum HandleResult {
     Success,
@@ -85,16 +89,25 @@ pub async fn scrape_article_worker(
 
         match handle_article(db, article_uuid).await {
             Ok(HandleResult::Success) => {
-                if let Err(e) = jetstream_context
-                    .publish("tasks.ml.sentimental-analysis", msg.payload.clone())
-                    .await
-                {
-                    error!(
-                        "Couldn't publish task tasks.ml.sentimental-analysis, naking with 30 minutes: {}",
-                        e
-                    );
+                // Try to publish both ML tasks. We use a single loop to publish them
+                // and if any fail, we Nak the original scrape message so it's retried.
+                let mut published_all = true;
 
-                    msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(30 * 60))))
+                if let Err(e) = worker_service::categorize_article_for_uuid(jetstream_context, article_uuid).await {
+                    error!("Couldn't publish tasks.ml.categorize for {}: {}", article_uuid, e);
+                    published_all = false;
+                }
+
+                if published_all {
+                    if let Err(e) = worker_service::calculate_sentimental_analysis_for_uuid(jetstream_context, article_uuid).await {
+                        error!("Couldn't publish tasks.ml.sentimental-analysis for {}: {}", article_uuid, e);
+                        published_all = false;
+                    }
+                }
+
+                if !published_all {
+                    error!("Failed to publish ML tasks for {}, naking with 10 minutes delay", article_uuid);
+                    msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(10 * 60))))
                         .await
                         .ok();
                     metrics::record_worker_task("scrape_article", false, start.elapsed());
@@ -111,11 +124,13 @@ pub async fn scrape_article_worker(
             }
 
             Err(err) => {
-                error!("Processing failed: {}, retrying later in 24 hours", err);
+                error!("Processing failed for article {}: {}, retrying in 1 hour", article_uuid, err);
 
-                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(24 * 60 * 60))))
-                    .await
-                    .ok();
+                msg.ack_with(jetstream::AckKind::Nak(Some(Duration::from_secs(
+                    60 * 60,
+                ))))
+                .await
+                .ok();
                 metrics::record_worker_task("scrape_article", false, start.elapsed());
             }
         }

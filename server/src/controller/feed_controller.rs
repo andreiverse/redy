@@ -47,7 +47,8 @@ pub async fn feed_post(
         feed_type: Set(payload.feed_type.into()),
         created_at: Set(Utc::now().into()),
         last_fetch: Set(None),
-        owner_uuid: Set(Some(user.id))
+        owner_uuid: Set(Some(user.id)),
+        category: Set(None) 
     };
 
     let feed = feed_ent

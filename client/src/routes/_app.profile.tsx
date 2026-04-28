@@ -77,7 +77,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="container  py-10 space-y-8">
+    <div className="container pb-10 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">User Profile</h1>

@@ -10,6 +10,7 @@ use uuid::Uuid;
 pub struct ArticleWithDataDto {
     pub article: ArticleDto,
     pub sentiment_score: Option<f64>,
+    pub category: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -71,7 +72,8 @@ impl From<(ArticleModel, Option<entities::article_data::Model>)> for ArticleWith
         let (article, article_data_opt) = tuple;
         Self {
             article: ArticleDto::from(article),
-            sentiment_score: article_data_opt.and_then(|d| d.sentiment_score),
+            sentiment_score: article_data_opt.clone().and_then(|d| d.sentiment_score),
+            category: article_data_opt.and_then(|d| d.category)
         }
     }
 }

@@ -32,7 +32,7 @@ function AdminLayout() {
   return (
     <div className="flex gap-6">
       <aside className="w-64 shrink-0 hidden md:block">
-        <div className="sticky top-24 space-y-1">
+        <div className="sticky top-20 h-[calc(100vh-7rem)] overflow-y-auto pr-2 space-y-1 custom-scrollbar">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 px-2">
             Admin Panel
           </h2>

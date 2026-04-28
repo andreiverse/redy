@@ -17,7 +17,7 @@ function Index() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 py-8">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 pb-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">Welcome to Redy</h1>
         <p className="text-muted-foreground max-w-[600px] md:text-xl">

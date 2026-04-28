@@ -9,7 +9,7 @@ function AppLayout() {
   return (
     <div className="flex gap-6">
       <aside className="w-64 shrink-0 hidden md:block">
-        <div className="sticky top-24 h-[calc(100vh-8rem)]">
+        <div className="sticky top-20 h-[calc(100vh-7rem)]">
           <FeedList className="h-full" />
         </div>
       </aside>

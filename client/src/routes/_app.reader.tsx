@@ -42,6 +42,9 @@ function RouteComponent() {
           articleQuery.data.sentimentScore && <span>Sentimental score: {articleQuery.data.sentimentScore}</span>
         }
         {
+          articleQuery.data.category && <span>Category: {articleQuery.data.category}</span>
+        }
+        {
           <span>Language: {articleQuery.data.article.language}</span>
         }
       </div>
