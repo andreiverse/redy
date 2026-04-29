@@ -1,4 +1,4 @@
-ocker_compose('docker-compose.yaml')
+docker_compose('docker-compose.yaml')
 
 watch_settings(ignore=[
     '**/target',
