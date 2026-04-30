@@ -39,6 +39,7 @@ pub struct AppState {
     pub db: DatabaseConnection,
     pub auth_service: Arc<AuthService>,
     pub frontend_url: String,
+    pub js: jetstream::Context,
 }
 
 #[derive(Parser)]
@@ -178,14 +179,16 @@ async fn main() -> Result<(), anyhow::Error> {
     });
 
     let db_for_worker2 = db.clone();
+    let js_for_worker2 = js.clone();
     tokio::spawn(async move {
-        scrape_article_worker(&js, &db_for_worker2).await;
+        scrape_article_worker(&js_for_worker2, &db_for_worker2).await;
     });
 
     let state = AppState {
         db,
         auth_service: Arc::new(auth_service),
         frontend_url: std::env::var("FRONTEND_URL").unwrap_or("http://localhost:3000".to_string()),
+        js: js.clone(),
     };
 
     let recorder_handle = metrics::init_prometheus();

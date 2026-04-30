@@ -10,6 +10,7 @@ pub mod feed_controller;
 pub mod reader_controller;
 pub mod user_controller;
 pub mod user_feed_favorite_controller;
+pub mod worker_controller;
 
 pub fn create_controller() -> OpenApiRouter<AppState> {
     OpenApiRouter::<AppState>::new()
@@ -21,4 +22,5 @@ pub fn create_controller() -> OpenApiRouter<AppState> {
         .nest("/auth", auth_controller::router())
         .nest("/favorites", user_feed_favorite_controller::router())
         .nest("/user", user_controller::router())
+        .nest("/workers", worker_controller::router())
 }

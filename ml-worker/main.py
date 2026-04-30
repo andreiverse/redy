@@ -90,7 +90,6 @@ async def run():
             except:
                 pass
 
-    # 👉 Let subscribe handle consumer creation
     try:
         await js.subscribe(
             "tasks.ml.*",

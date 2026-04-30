@@ -308,6 +308,22 @@ export interface paths {
         patch: operations["user_patch"];
         trace?: never;
     };
+    "/workers/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_worker_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -345,6 +361,13 @@ export interface components {
             id?: string | null;
             modelDescription: string;
         };
+        ConsumerStats: {
+            ack_pending: number;
+            name: string;
+            /** Format: int64 */
+            pending: number;
+            redelivered: number;
+        };
         CreateFeedDto: {
             defaultLanguage: string;
             feedType: components["schemas"]["FeedTypeDto"];
@@ -379,6 +402,15 @@ export interface components {
         HtmlArticle: {
             html_content: string;
             title: string;
+        };
+        QueueStats: {
+            /** Format: int64 */
+            bytes: number;
+            consumer_count: number;
+            consumers: components["schemas"]["ConsumerStats"][];
+            /** Format: int64 */
+            messages: number;
+            stream_name: string;
         };
         UpdateFeedDto: {
             defaultLanguage?: string | null;
@@ -1125,6 +1157,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserDto"];
+                };
+            };
+        };
+    };
+    get_worker_stats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueStats"][];
                 };
             };
         };

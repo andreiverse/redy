@@ -28,6 +28,11 @@ pub async fn handle_article(
         None => return Ok(HandleResult::NotFound),
     };
 
+    // Idempotency check: if we already have content, don't scrape again
+    if article.html_content.is_some() {
+        return Ok(HandleResult::Success);
+    }
+
     let article_link = article.link.clone();
     let mut active_article = article.into_active_model();
 
@@ -57,6 +62,7 @@ pub async fn scrape_article_worker(
             "worker",
             jetstream::consumer::pull::Config {
                 durable_name: Some("worker".to_string()),
+                ack_wait: Duration::from_secs(5 * 60), // Increase to 5 minutes to prevent redelivery during slow scrapes
                 ..Default::default()
             },
         )
