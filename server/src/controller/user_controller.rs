@@ -4,7 +4,7 @@ use crate::entities::user;
 use crate::AppState;
 use axum::extract::{Path, State};
 use axum::Json;
-use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, Set};
+use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, QueryOrder, Set};
 use tower_sessions::Session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -27,7 +27,7 @@ pub async fn user_get_all(
         return Err(AppError::Forbidden("Only admins can list users".to_owned()));
     }
 
-    let users = user::Entity::find().all(&state.db).await?;
+    let users = user::Entity::find().order_by_asc(user::Column::Id).all(&state.db).await?;
     Ok(Json(users.into_iter().map(UserDto::from).collect()))
 }
 

@@ -35,3 +35,31 @@ impl From<CategoryDto> for entities::category::ActiveModel {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct FeedCategoryDto {
+    pub feed_id: Uuid,
+    pub category_id: Uuid,
+    pub model_description_override: Option<String>,
+}
+
+impl From<entities::feed_category::Model> for FeedCategoryDto {
+    fn from(m: entities::feed_category::Model) -> Self {
+        Self {
+            feed_id: m.feed_id,
+            category_id: m.category_id,
+            model_description_override: m.model_description_override,
+        }
+    }
+}
+
+impl From<FeedCategoryDto> for entities::feed_category::ActiveModel {
+    fn from(dto: FeedCategoryDto) -> Self {
+        Self {
+            feed_id: Set(dto.feed_id),
+            category_id: Set(dto.category_id),
+            model_description_override: Set(dto.model_description_override),
+        }
+    }
+}

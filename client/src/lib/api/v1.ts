@@ -116,6 +116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["category_get_all"];
+        put?: never;
+        post: operations["category_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/category/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["category_get_by_id"];
+        put: operations["category_put"];
+        post?: never;
+        delete: operations["category_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/favorites": {
         parameters: {
             query?: never;
@@ -159,6 +191,38 @@ export interface paths {
         put?: never;
         post: operations["feed_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/feed/{feed_id}/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["feed_category_get_all"];
+        put?: never;
+        post: operations["feed_category_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/feed/{feed_id}/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["feed_category_put"];
+        post?: never;
+        delete: operations["feed_category_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -269,15 +333,30 @@ export interface components {
         ArticleStatusDto: "pending" | "extracted" | "extractionFailed" | "done";
         ArticleWithDataDto: {
             article: components["schemas"]["ArticleDto"];
-            category?: string | null;
+            /** Format: uuid */
+            categoryId?: string | null;
             /** Format: double */
             sentimentScore?: number | null;
+        };
+        CategoryDto: {
+            humanDescription: string;
+            humanName: string;
+            /** Format: uuid */
+            id?: string | null;
+            modelDescription: string;
         };
         CreateFeedDto: {
             defaultLanguage: string;
             feedType: components["schemas"]["FeedTypeDto"];
             name: string;
             url: string;
+        };
+        FeedCategoryDto: {
+            /** Format: uuid */
+            categoryId: string;
+            /** Format: uuid */
+            feedId: string;
+            modelDescriptionOverride?: string | null;
         };
         FeedDto: {
             /** Format: date-time */
@@ -334,7 +413,7 @@ export interface operations {
         parameters: {
             query?: {
                 feed_uuid?: string | null;
-                category?: string | null;
+                category_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -356,7 +435,7 @@ export interface operations {
         parameters: {
             query?: {
                 feed_uuid?: string | null;
-                category?: string | null;
+                category_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -369,7 +448,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string[];
+                    "application/json": components["schemas"]["CategoryDto"][];
                 };
             };
         };
@@ -518,6 +597,135 @@ export interface operations {
             };
         };
     };
+    category_get_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"][];
+                };
+            };
+        };
+    };
+    category_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    category_get_by_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+            /** @description Category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    category_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+            /** @description Category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    category_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Category deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     get_favorite_feeds: {
         parameters: {
             query?: never;
@@ -618,6 +826,113 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["FeedDto"];
                 };
+            };
+        };
+    };
+    feed_category_get_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedCategoryDto"][];
+                };
+            };
+        };
+    };
+    feed_category_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedCategoryDto"];
+                };
+            };
+        };
+    };
+    feed_category_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_id: string;
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedCategoryDto"];
+                };
+            };
+            /** @description Feed category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    feed_category_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                feed_id: string;
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Feed category deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Feed category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

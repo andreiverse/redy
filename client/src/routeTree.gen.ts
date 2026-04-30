@@ -15,6 +15,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminFeedsRouteImport } from './routes/admin.feeds'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AppReaderRouteImport } from './routes/_app.reader'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppFeedFeedIdRouteImport } from './routes/_app.feed.$feedId'
@@ -48,6 +49,11 @@ const AdminFeedsRoute = AdminFeedsRouteImport.update({
   path: '/feeds',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AppReaderRoute = AppReaderRouteImport.update({
   id: '/reader',
   path: '/reader',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/profile': typeof AppProfileRoute
   '/reader': typeof AppReaderRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/reader': typeof AppReaderRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/users': typeof AdminUsersRoute
   '/': typeof AppIndexRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/_app/profile': typeof AppProfileRoute
   '/_app/reader': typeof AppReaderRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/users': typeof AdminUsersRoute
   '/_app/': typeof AppIndexRoute
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/profile'
     | '/reader'
+    | '/admin/categories'
     | '/admin/feeds'
     | '/admin/users'
     | '/admin/'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   to:
     | '/profile'
     | '/reader'
+    | '/admin/categories'
     | '/admin/feeds'
     | '/admin/users'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/_app/profile'
     | '/_app/reader'
+    | '/admin/categories'
     | '/admin/feeds'
     | '/admin/users'
     | '/_app/'
@@ -177,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFeedsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_app/reader': {
       id: '/_app/reader'
       path: '/reader'
@@ -218,12 +237,14 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AdminRouteChildren {
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminFeedsRoute: typeof AdminFeedsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCategoriesRoute: AdminCategoriesRoute,
   AdminFeedsRoute: AdminFeedsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,

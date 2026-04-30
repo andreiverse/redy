@@ -44,7 +44,11 @@ pub async fn article_get_categories(
         query = query.filter(article::Column::FeedId.eq(feed_uuid));
     }
 
-    let results: Vec<entities::category::Model> = query.all(&state.db).await.unwrap();
+    let results: Vec<entities::category::Model> = query
+        .order_by_asc(category::Column::HumanName)
+        .all(&state.db)
+        .await
+        .unwrap();
 
     let categories = results
         .into_iter()

@@ -22,6 +22,15 @@ function RouteComponent() {
     }
   })
 
+  const allCategoriesQuery = $api.useQuery("get", "/category", undefined, {
+    staleTime: Infinity,
+  });
+
+  const categoryMap = allCategoriesQuery.data?.reduce((acc, cat) => {
+    if (cat.id) acc[cat.id] = cat.humanName;
+    return acc;
+  }, {} as Record<string, string>) || {};
+
   if (articleQuery.isLoading) {
     return <>Loading...</>
   }
@@ -42,7 +51,7 @@ function RouteComponent() {
           articleQuery.data.sentimentScore && <span>Sentimental score: {articleQuery.data.sentimentScore}</span>
         }
         {
-          articleQuery.data.category && <span>Category: {articleQuery.data.category}</span>
+          articleQuery.data.categoryId && categoryMap[articleQuery.data.categoryId] && <span>Category: {categoryMap[articleQuery.data.categoryId]}</span>
         }
         {
           <span>Language: {articleQuery.data.article.language}</span>

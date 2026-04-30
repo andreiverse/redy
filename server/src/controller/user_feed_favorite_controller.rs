@@ -4,7 +4,7 @@ use crate::entities::{feed, user_feed_favorite};
 use crate::AppState;
 use axum::extract::{Path, State};
 use axum::Json;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, Set};
 use tower_sessions::Session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -74,6 +74,7 @@ pub async fn get_favorite_feeds(
     let feeds = feed::Entity::find()
         .inner_join(user_feed_favorite::Entity)
         .filter(user_feed_favorite::Column::UserUuid.eq(user.id))
+        .order_by_asc(feed::Column::Name)
         .all(&state.db)
         .await?;
 

@@ -8,7 +8,10 @@ use axum::extract::{Path, Query};
 use axum::{Json, extract::State};
 use chrono::Utc;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, TryIntoModel};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
+    TryIntoModel,
+};
 use tower_sessions::Session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -86,7 +89,7 @@ pub async fn feed_get(
         query = query.filter(feed::Column::OwnerUuid.eq(user_id));
     }
 
-    let feeds = query.all(&state.db).await?;
+    let feeds = query.order_by_asc(feed::Column::Name).all(&state.db).await?;
 
     Ok(Json(feeds.into_iter().map(FeedDto::from).collect()))
 }

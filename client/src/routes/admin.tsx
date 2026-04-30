@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link } from '@tanstack/react-router'
 import { $api } from '../lib/api'
-import { LayoutDashboard, Rss, Users } from 'lucide-react'
+import { LayoutDashboard, Rss, Users, Hash } from 'lucide-react'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async () => {
@@ -59,6 +59,14 @@ function AdminLayout() {
           >
             <Users className="size-4" />
             Users
+          </Link>
+          <Link
+            to="/admin/categories"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            activeProps={{ className: "bg-primary/10 text-primary font-medium" }}
+          >
+            <Hash className="size-4" />
+            Categories
           </Link>
         </div>
       </aside>

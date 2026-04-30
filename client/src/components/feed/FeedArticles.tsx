@@ -7,14 +7,15 @@ import { Trash2, AlertCircle, Clock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
+import { FeedCategoryManager } from "./FeedCategoryManager";
 
 export function ArticleCard({
     article,
     sentimentScore,
-    category
+    categoryName
 }: {
     sentimentScore?: number | null,
-    category?: string | null,
+    categoryName?: string | null,
     article: components["schemas"]["ArticleDto"]
 }) {
     const now = new Date();
@@ -64,9 +65,9 @@ export function ArticleCard({
                             )}
                         </div>
                     </div>
-                    {category && (
+                    {categoryName && (
                         <Badge variant="secondary" className="shrink-0">
-                            {category}
+                            {categoryName}
                         </Badge>
                     )}
                 </div>
@@ -104,6 +105,15 @@ export function FeedArticleList({ feedUuid, initialCategory }: { feedUuid: strin
         }
     });
 
+    const allCategoriesQuery = $api.useQuery("get", "/category", undefined, {
+        staleTime: Infinity,
+    });
+
+    const categoryMap = allCategoriesQuery.data?.reduce((acc, cat) => {
+        if (cat.id) acc[cat.id] = cat.humanName;
+        return acc;
+    }, {} as Record<string, string>) || {};
+
     useEffect(() => {
         if (initialCategory) {
             setSelectedCategory(initialCategory);
@@ -116,7 +126,7 @@ export function FeedArticleList({ feedUuid, initialCategory }: { feedUuid: strin
         params: {
             query: {
                 feed_uuid: feedUuid ? feedUuid : undefined,
-                category: selectedCategory === "all" ? undefined : selectedCategory
+                category_id: selectedCategory === "all" ? undefined : selectedCategory
             }
         }
     });
@@ -177,15 +187,18 @@ export function FeedArticleList({ feedUuid, initialCategory }: { feedUuid: strin
                         </p>
                     </div>
                     {canManage && (
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={handleDelete}
-                            disabled={deleteFeedMutation.isPending}
-                            title="Delete feed"
-                        >
-                            <Trash2 className="size-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                            {feedUuid && <FeedCategoryManager feedId={feedUuid} />}
+                            <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={handleDelete}
+                                disabled={deleteFeedMutation.isPending}
+                                title="Delete feed"
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </div>
                     )}
                 </div>
             }
@@ -204,13 +217,13 @@ export function FeedArticleList({ feedUuid, initialCategory }: { feedUuid: strin
                     </Button>
                     {categoriesQuery.data?.map(category => (
                         <Button
-                            key={category}
-                            variant={selectedCategory === category ? "default" : "outline"}
+                            key={category.id}
+                            variant={selectedCategory === category.id ? "default" : "outline"}
                             size="sm"
-                            onClick={() => handleCategoryChange(category)}
+                            onClick={() => handleCategoryChange(category.id!)}
                             className="rounded-full h-7 px-3 text-xs"
                         >
-                            {category}
+                            {category.humanName}
                         </Button>
                     ))}
                 </div>}
@@ -221,7 +234,7 @@ export function FeedArticleList({ feedUuid, initialCategory }: { feedUuid: strin
                         <ArticleCard
                             key={article.article.link}
                             sentimentScore={article.sentimentScore}
-                            category={article.category}
+                            categoryName={article.categoryId ? categoryMap[article.categoryId] : null}
                             article={article.article}
                         />
                     ))
