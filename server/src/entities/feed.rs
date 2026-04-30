@@ -4,12 +4,18 @@ use super::sea_orm_active_enums::FeedType;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "feed")]
+#[derive(Copy, Clone, Default, Debug, DeriveEntity)]
+pub struct Entity;
+
+impl EntityName for Entity {
+    fn table_name(&self) -> &str {
+        "feed"
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize)]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(unique)]
     pub url: String,
     pub feed_type: FeedType,
     pub created_at: DateTimeWithTimeZone,
@@ -17,23 +23,68 @@ pub struct Model {
     pub name: String,
     pub default_language: String,
     pub owner_uuid: Option<Uuid>,
-    pub category: Option<String>,
 }
 
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
+pub enum Column {
+    Id,
+    Url,
+    FeedType,
+    CreatedAt,
+    LastFetch,
+    Name,
+    DefaultLanguage,
+    OwnerUuid,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
+pub enum PrimaryKey {
+    Id,
+}
+
+impl PrimaryKeyTrait for PrimaryKey {
+    type ValueType = Uuid;
+    fn auto_increment() -> bool {
+        false
+    }
+}
+
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::article::Entity")]
     Article,
-    #[sea_orm(
-        belongs_to = "super::user::Entity",
-        from = "Column::OwnerUuid",
-        to = "super::user::Column::Id",
-        on_update = "Cascade",
-        on_delete = "SetNull"
-    )]
+    FeedCategory,
     User,
-    #[sea_orm(has_many = "super::user_feed_favorite::Entity")]
     UserFeedFavorite,
+}
+
+impl ColumnTrait for Column {
+    type EntityName = Entity;
+    fn def(&self) -> ColumnDef {
+        match self {
+            Self::Id => ColumnType::Uuid.def(),
+            Self::Url => ColumnType::String(StringLen::None).def().unique(),
+            Self::FeedType => FeedType::db_type().get_column_type().to_owned().def(),
+            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
+            Self::LastFetch => ColumnType::TimestampWithTimeZone.def().null(),
+            Self::Name => ColumnType::String(StringLen::None).def(),
+            Self::DefaultLanguage => ColumnType::String(StringLen::None).def(),
+            Self::OwnerUuid => ColumnType::Uuid.def().null(),
+        }
+    }
+}
+
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
+        match self {
+            Self::Article => Entity::has_many(super::article::Entity).into(),
+            Self::FeedCategory => Entity::has_many(super::feed_category::Entity).into(),
+            Self::User => Entity::belongs_to(super::user::Entity)
+                .from(Column::OwnerUuid)
+                .to(super::user::Column::Id)
+                .into(),
+            Self::UserFeedFavorite => Entity::has_many(super::user_feed_favorite::Entity).into(),
+        }
+    }
 }
 
 impl Related<super::article::Entity> for Entity {
@@ -42,9 +93,24 @@ impl Related<super::article::Entity> for Entity {
     }
 }
 
+impl Related<super::feed_category::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FeedCategory.def()
+    }
+}
+
 impl Related<super::user_feed_favorite::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::UserFeedFavorite.def()
+    }
+}
+
+impl Related<super::category::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::feed_category::Relation::Category.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::feed_category::Relation::Feed.def().rev())
     }
 }
 

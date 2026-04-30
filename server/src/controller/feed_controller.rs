@@ -48,7 +48,6 @@ pub async fn feed_post(
         created_at: Set(Utc::now().into()),
         last_fetch: Set(None),
         owner_uuid: Set(Some(user.id)),
-        category: Set(None) 
     };
 
     let feed = feed_ent

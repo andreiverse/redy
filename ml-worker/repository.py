@@ -7,11 +7,54 @@ from config import POSTGRES_URL
 
 conn = psycopg2.connect(POSTGRES_URL)
 
+
+def get_feed_categories(feed_id: uuid.UUID):
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT 
+                category.id, 
+                COALESCE(feed_category.model_description_override, category.model_description) as model_description 
+            FROM feed_category 
+            INNER JOIN category ON feed_category.category_id = category.id 
+            WHERE feed_id = %s
+            """,
+            (str(feed_id),)
+        )
+        return cursor.fetchall()
+
+    except Exception as e:
+        conn.rollback()
+        print("DB error in get_feed_categories:", e)
+        return None
+
+    finally:
+        cursor.close()
+
+
+def get_all_categories():
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT id, model_description FROM category"
+        )
+        return cursor.fetchall()
+
+    except Exception as e:
+        conn.rollback()
+        print("DB error in get_all_categories:", e)
+        return None
+
+    finally:
+        cursor.close()
+
+
 def get_article_by_uuid(id: uuid.UUID):
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "SELECT html_content, title, language FROM article WHERE id = %s",
+            "SELECT html_content, title, language, feed_id FROM article WHERE id = %s",
             (str(id),)
         )
         return cursor.fetchone()

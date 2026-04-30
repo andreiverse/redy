@@ -21,6 +21,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260425_194812_add_admin_flag::Migration),
             Box::new(m20260427_183700_add_can_create_feeds_flag::Migration),
             Box::new(m20260428_175235_add_article_category::Migration),
+            Box::new(m20260430_141059_category_table_and_feed_categories_table::Migration),
         ]
     }
 }
@@ -40,3 +41,4 @@ mod m20260425_160859_add_attribute_fetched_from_feed_html_content;
 mod m20260425_194812_add_admin_flag;
 mod m20260427_183700_add_can_create_feeds_flag;
 mod m20260428_175235_add_article_category;
+mod m20260430_141059_category_table_and_feed_categories_table;

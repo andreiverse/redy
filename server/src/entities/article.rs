@@ -4,18 +4,23 @@ use super::sea_orm_active_enums::ArticleStatus;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "article")]
+#[derive(Copy, Clone, Default, Debug, DeriveEntity)]
+pub struct Entity;
+
+impl EntityName for Entity {
+    fn table_name(&self) -> &str {
+        "article"
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize)]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub feed_id: Uuid,
     pub title: String,
     pub feed_description: Option<String>,
-    #[sea_orm(unique)]
     pub content_hash: String,
     pub link: String,
-    #[sea_orm(column_type = "Text", nullable)]
     pub html_content: Option<String>,
     pub status: ArticleStatus,
     pub published_at: Option<DateTimeWithTimeZone>,
@@ -24,18 +29,70 @@ pub struct Model {
     pub html_content_from_feed: bool,
 }
 
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
+pub enum Column {
+    Id,
+    FeedId,
+    Title,
+    FeedDescription,
+    ContentHash,
+    Link,
+    HtmlContent,
+    Status,
+    PublishedAt,
+    FetchedAt,
+    Language,
+    HtmlContentFromFeed,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
+pub enum PrimaryKey {
+    Id,
+}
+
+impl PrimaryKeyTrait for PrimaryKey {
+    type ValueType = Uuid;
+    fn auto_increment() -> bool {
+        false
+    }
+}
+
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
-    #[sea_orm(has_one = "super::article_data::Entity")]
     ArticleData,
-    #[sea_orm(
-        belongs_to = "super::feed::Entity",
-        from = "Column::FeedId",
-        to = "super::feed::Column::Id",
-        on_update = "NoAction",
-        on_delete = "Cascade"
-    )]
     Feed,
+}
+
+impl ColumnTrait for Column {
+    type EntityName = Entity;
+    fn def(&self) -> ColumnDef {
+        match self {
+            Self::Id => ColumnType::Uuid.def(),
+            Self::FeedId => ColumnType::Uuid.def(),
+            Self::Title => ColumnType::String(StringLen::None).def(),
+            Self::FeedDescription => ColumnType::String(StringLen::None).def().null(),
+            Self::ContentHash => ColumnType::String(StringLen::None).def().unique(),
+            Self::Link => ColumnType::String(StringLen::None).def(),
+            Self::HtmlContent => ColumnType::Text.def().null(),
+            Self::Status => ArticleStatus::db_type().get_column_type().to_owned().def(),
+            Self::PublishedAt => ColumnType::TimestampWithTimeZone.def().null(),
+            Self::FetchedAt => ColumnType::TimestampWithTimeZone.def(),
+            Self::Language => ColumnType::String(StringLen::None).def(),
+            Self::HtmlContentFromFeed => ColumnType::Boolean.def(),
+        }
+    }
+}
+
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
+        match self {
+            Self::ArticleData => Entity::has_one(super::article_data::Entity).into(),
+            Self::Feed => Entity::belongs_to(super::feed::Entity)
+                .from(Column::FeedId)
+                .to(super::feed::Column::Id)
+                .into(),
+        }
+    }
 }
 
 impl Related<super::article_data::Entity> for Entity {

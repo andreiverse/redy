@@ -4,7 +4,9 @@ pub mod prelude;
 
 pub mod article;
 pub mod article_data;
+pub mod category;
 pub mod feed;
+pub mod feed_category;
 pub mod sea_orm_active_enums;
 pub mod user;
 pub mod user_feed_favorite;

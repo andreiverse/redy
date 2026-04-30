@@ -40,9 +40,11 @@ pub async fn run_ml_for_uuid(js: &jetstream::Context, article_uuid: Uuid) -> Res
     Ok(())
 }
 
-pub async fn run_ml(db: &DatabaseConnection, js: &jetstream::Context, missing_only: bool) {
-    calculate_sentimental_analysis(db, js, missing_only).await;
-    categorize_articles(db, js, missing_only).await;
+pub async fn run_ml(db: &DatabaseConnection, js: &jetstream::Context, missing_only: bool) -> Result<(), anyhow::Error>{
+    calculate_sentimental_analysis(db, js, missing_only).await?;
+    categorize_articles(db, js, missing_only).await?;
+
+    Ok(())
 }
 
 pub async fn categorize_articles(
@@ -55,7 +57,7 @@ pub async fn categorize_articles(
     if missing_only {
         articles_query = articles_query.filter(
             sea_orm::Condition::any()
-                .add(article_data::Column::Category.is_null())
+                .add(article_data::Column::CategoryId.is_null())
                 .add(article_data::Column::Id.is_null()),
         );
     }

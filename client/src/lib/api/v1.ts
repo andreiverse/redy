@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/articles/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["article_get_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/articles/{article_uuid}": {
         parameters: {
             query?: never;
@@ -318,6 +334,7 @@ export interface operations {
         parameters: {
             query?: {
                 feed_uuid?: string | null;
+                category?: string | null;
             };
             header?: never;
             path?: never;
@@ -331,6 +348,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArticleWithDataDto"][];
+                };
+            };
+        };
+    };
+    article_get_categories: {
+        parameters: {
+            query?: {
+                feed_uuid?: string | null;
+                category?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
                 };
             };
         };

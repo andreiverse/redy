@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies if needed (psycopg2 might need some)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     gcc \
@@ -17,9 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy ml-worker source code
 COPY ml-worker/ .
 
-# # Set environment variables (can be overridden)
-# ENV NATS_SERVER="nats://localhost:4222"
-# ENV POSTGRES_URL="postgres://user:password@localhost:5432/my_app_db"
+# Set the cache directory to a local folder in the container
+ENV HF_HOME="/app/model_cache"
+
+# Pre-download the model into the specified local folder
+RUN python -c "from model import get_classifier; get_classifier()"
 
 # Run the application
 CMD ["python", "main.py"]

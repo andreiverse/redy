@@ -8,26 +8,28 @@ pub struct Entity;
 
 impl EntityName for Entity {
     fn table_name(&self) -> &str {
-        "user_feed_favorite"
+        "feed_category"
     }
 }
 
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize)]
 pub struct Model {
-    pub user_uuid: Uuid,
-    pub feed_uuid: Uuid,
+    pub feed_id: Uuid,
+    pub category_id: Uuid,
+    pub model_description_override: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
-    UserUuid,
-    FeedUuid,
+    FeedId,
+    CategoryId,
+    ModelDescriptionOverride,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
 pub enum PrimaryKey {
-    UserUuid,
-    FeedUuid,
+    FeedId,
+    CategoryId,
 }
 
 impl PrimaryKeyTrait for PrimaryKey {
@@ -39,16 +41,17 @@ impl PrimaryKeyTrait for PrimaryKey {
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
+    Category,
     Feed,
-    User,
 }
 
 impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::UserUuid => ColumnType::Uuid.def(),
-            Self::FeedUuid => ColumnType::Uuid.def(),
+            Self::FeedId => ColumnType::Uuid.def(),
+            Self::CategoryId => ColumnType::Uuid.def(),
+            Self::ModelDescriptionOverride => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }
@@ -56,27 +59,27 @@ impl ColumnTrait for Column {
 impl RelationTrait for Relation {
     fn def(&self) -> RelationDef {
         match self {
+            Self::Category => Entity::belongs_to(super::category::Entity)
+                .from(Column::CategoryId)
+                .to(super::category::Column::Id)
+                .into(),
             Self::Feed => Entity::belongs_to(super::feed::Entity)
-                .from(Column::FeedUuid)
+                .from(Column::FeedId)
                 .to(super::feed::Column::Id)
                 .into(),
-            Self::User => Entity::belongs_to(super::user::Entity)
-                .from(Column::UserUuid)
-                .to(super::user::Column::Id)
-                .into(),
         }
+    }
+}
+
+impl Related<super::category::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Category.def()
     }
 }
 
 impl Related<super::feed::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Feed.def()
-    }
-}
-
-impl Related<super::user::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::User.def()
     }
 }
 

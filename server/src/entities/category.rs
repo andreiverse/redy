@@ -8,26 +8,24 @@ pub struct Entity;
 
 impl EntityName for Entity {
     fn table_name(&self) -> &str {
-        "user"
+        "category"
     }
 }
 
 #[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize)]
 pub struct Model {
     pub id: Uuid,
-    pub email: String,
-    pub username: String,
-    pub is_admin: bool,
-    pub can_create_feeds: bool,
+    pub human_name: String,
+    pub model_description: String,
+    pub human_description: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
 pub enum Column {
     Id,
-    Email,
-    Username,
-    IsAdmin,
-    CanCreateFeeds,
+    HumanName,
+    ModelDescription,
+    HumanDescription,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -44,8 +42,8 @@ impl PrimaryKeyTrait for PrimaryKey {
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
-    Feed,
-    UserFeedFavorite,
+    ArticleData,
+    FeedCategory,
 }
 
 impl ColumnTrait for Column {
@@ -53,10 +51,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::Uuid.def(),
-            Self::Email => ColumnType::String(StringLen::None).def().unique(),
-            Self::Username => ColumnType::String(StringLen::None).def().unique(),
-            Self::IsAdmin => ColumnType::Boolean.def(),
-            Self::CanCreateFeeds => ColumnType::Boolean.def(),
+            Self::HumanName => ColumnType::String(StringLen::None).def(),
+            Self::ModelDescription => ColumnType::String(StringLen::None).def(),
+            Self::HumanDescription => ColumnType::String(StringLen::None).def(),
         }
     }
 }
@@ -64,24 +61,30 @@ impl ColumnTrait for Column {
 impl RelationTrait for Relation {
     fn def(&self) -> RelationDef {
         match self {
-            Self::Feed => Entity::has_many(super::feed::Entity).into(),
-            Self::UserFeedFavorite => Entity::has_many(super::user_feed_favorite::Entity).into(),
+            Self::ArticleData => Entity::has_many(super::article_data::Entity).into(),
+            Self::FeedCategory => Entity::has_many(super::feed_category::Entity).into(),
         }
     }
 }
 
-impl Related<super::user_feed_favorite::Entity> for Entity {
+impl Related<super::article_data::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::UserFeedFavorite.def()
+        Relation::ArticleData.def()
+    }
+}
+
+impl Related<super::feed_category::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FeedCategory.def()
     }
 }
 
 impl Related<super::feed::Entity> for Entity {
     fn to() -> RelationDef {
-        super::user_feed_favorite::Relation::Feed.def()
+        super::feed_category::Relation::Feed.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::user_feed_favorite::Relation::User.def().rev())
+        Some(super::feed_category::Relation::Category.def().rev())
     }
 }
 

@@ -45,6 +45,7 @@ dotenv = { version = "0.15.0", optional = true }
 metrics = "0.24.3"
 metrics-exporter-prometheus = "0.18.1"
 ammonia = "4.1.2"
+serde_json = "1.0.149"
 
 [features]
 dotenv = ["dep:dotenv"]

@@ -3,31 +3,82 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "article_data")]
-pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: Uuid,
-    #[sea_orm(column_type = "Double", nullable)]
-    pub sentiment_score: Option<f64>,
-    pub category: Option<String>,
+#[derive(Copy, Clone, Default, Debug, DeriveEntity)]
+pub struct Entity;
+
+impl EntityName for Entity {
+    fn table_name(&self) -> &str {
+        "article_data"
+    }
 }
 
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+#[derive(Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Serialize, Deserialize)]
+pub struct Model {
+    pub id: Uuid,
+    pub sentiment_score: Option<f64>,
+    pub category_id: Option<Uuid>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
+pub enum Column {
+    Id,
+    SentimentScore,
+    CategoryId,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
+pub enum PrimaryKey {
+    Id,
+}
+
+impl PrimaryKeyTrait for PrimaryKey {
+    type ValueType = Uuid;
+    fn auto_increment() -> bool {
+        false
+    }
+}
+
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::article::Entity",
-        from = "Column::Id",
-        to = "super::article::Column::Id",
-        on_update = "NoAction",
-        on_delete = "Cascade"
-    )]
     Article,
+    Category,
+}
+
+impl ColumnTrait for Column {
+    type EntityName = Entity;
+    fn def(&self) -> ColumnDef {
+        match self {
+            Self::Id => ColumnType::Uuid.def(),
+            Self::SentimentScore => ColumnType::Double.def().null(),
+            Self::CategoryId => ColumnType::Uuid.def().null(),
+        }
+    }
+}
+
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
+        match self {
+            Self::Article => Entity::belongs_to(super::article::Entity)
+                .from(Column::Id)
+                .to(super::article::Column::Id)
+                .into(),
+            Self::Category => Entity::belongs_to(super::category::Entity)
+                .from(Column::CategoryId)
+                .to(super::category::Column::Id)
+                .into(),
+        }
+    }
 }
 
 impl Related<super::article::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Article.def()
+    }
+}
+
+impl Related<super::category::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Category.def()
     }
 }
 
