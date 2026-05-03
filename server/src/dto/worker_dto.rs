@@ -2,6 +2,19 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema, Debug)]
+pub struct ScheduleResult {
+    pub error: Option<String>,
+}
+
+impl Into<ScheduleResult> for Result<(), anyhow::Error> {
+    fn into(self) -> ScheduleResult {
+        ScheduleResult {
+            error: self.err().map(|f| f.to_string()),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Debug)]
 pub struct QueueStats {
     pub stream_name: String,
     pub messages: u64,

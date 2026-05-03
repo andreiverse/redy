@@ -308,6 +308,22 @@ export interface paths {
         patch: operations["user_patch"];
         trace?: never;
     };
+    "/workers/article/{article_uuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_article_uuid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workers/stats": {
         parameters: {
             query?: never;
@@ -411,6 +427,9 @@ export interface components {
             /** Format: int64 */
             messages: number;
             stream_name: string;
+        };
+        ScheduleResult: {
+            error?: string | null;
         };
         UpdateFeedDto: {
             defaultLanguage?: string | null;
@@ -1157,6 +1176,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserDto"];
+                };
+            };
+        };
+    };
+    post_article_uuid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleResult"];
                 };
             };
         };

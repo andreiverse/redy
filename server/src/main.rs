@@ -113,7 +113,7 @@ async fn main() -> Result<(), anyhow::Error> {
         }
         Commands::RunMlUuid { uuid } => {
             warn!("reruning ml for: {}", uuid);
-            worker_service::run_ml_for_uuid(&js, uuid).await;
+            worker_service::run_ml_for_uuid(&js, uuid).await?;
             exit(0)
         }
         Commands::RecalculateSentimentalAnalysis { missing_only } => {
@@ -121,15 +121,15 @@ async fn main() -> Result<(), anyhow::Error> {
                 "recalculating sentimental analysis, missing only: {}",
                 missing_only
             );
-            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await;
+            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await?;
             exit(0)
         }
         Commands::RerunMl { missing_only } => {
-            worker_service::run_ml(&db, &js, missing_only).await;
+            worker_service::run_ml(&db, &js, missing_only).await?;
             exit(0);
         }
         Commands::CalculateSentimentalAnalysisForUuid { missing_only } => {
-            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await;
+            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await?;
             exit(0);
         }
     }

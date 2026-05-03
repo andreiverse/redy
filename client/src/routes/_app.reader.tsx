@@ -1,3 +1,5 @@
+import { Button } from '#/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card';
 import { $api } from '#/lib/api'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from "zod";
@@ -14,6 +16,10 @@ export const Route = createFileRoute('/_app/reader')({
 function RouteComponent() {
   const { article_uuid } = Route.useSearch();
 
+  const rerun_ml = $api.useMutation("post", "/workers/article/{article_uuid}");
+  const { data: user } = $api.useQuery('get', '/auth/me', undefined, {
+    retry: false
+  });
   const articleQuery = $api.useQuery("get", "/articles/{article_uuid}", {
     params: {
       path: {
@@ -45,19 +51,44 @@ function RouteComponent() {
 
   return <div>
     <div>
-      <div className='text-3xl'>{articleQuery.data.article.title}</div>
-      <div className='flex flex-col mt-2'>
-        {
-          articleQuery.data.sentimentScore && <span>Sentimental score: {articleQuery.data.sentimentScore}</span>
-        }
-        {
-          articleQuery.data.categoryId && categoryMap[articleQuery.data.categoryId] && <span>Category: {categoryMap[articleQuery.data.categoryId]}</span>
-        }
-        {
-          <span>Language: {articleQuery.data.article.language}</span>
-        }
-      </div>
-      <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.article.htmlContent }} />
+
+      <Card className='flex flex-col mt-2'>
+        <CardHeader>
+
+          <CardTitle className='text-3xl'>{articleQuery.data.article.title}</CardTitle>
+          <CardDescription className='flex flex-col gap-2'>
+            {
+              articleQuery.data.sentimentScore && <span>Sentimental score: {articleQuery.data.sentimentScore}</span>
+            }
+            {
+              articleQuery.data.categoryId && categoryMap[articleQuery.data.categoryId] && <span>Category: {categoryMap[articleQuery.data.categoryId]}</span>
+            }
+            {
+              <span>Language: {articleQuery.data.article.language}</span>
+            }
+            <div>
+              {user?.isAdmin && <Button onClick={async () => {
+                rerun_ml.mutateAsync({
+                  params: {
+                    path: {
+                      article_uuid
+                    }
+                  }
+                }).then(res => {
+                  if (res.error) alert("ML Error: " + res.error)
+                  else alert("scheduled for rerunning...")
+                }).catch(e => {
+                  alert(JSON.stringify(e))
+                })
+              }}>Rerun ML</Button>}
+            </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+
+          <div className='text-justify news-content' dangerouslySetInnerHTML={{ __html: articleQuery.data.article.htmlContent }} />
+        </CardContent>
+      </Card>
     </div>
   </div>
 }
