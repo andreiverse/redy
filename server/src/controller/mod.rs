@@ -1,4 +1,5 @@
 use utoipa_axum::router::OpenApiRouter;
+use axum::routing::get;
 
 use crate::AppState;
 
@@ -23,4 +24,6 @@ pub fn create_controller() -> OpenApiRouter<AppState> {
         .nest("/favorites", user_feed_favorite_controller::router())
         .nest("/user", user_controller::router())
         .nest("/workers", worker_controller::router())
+        .route("/healthz", get(|| async { "OK" }))
+        .route("/readyz", get(|| async { "OK" }))
 }

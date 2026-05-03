@@ -23,5 +23,7 @@ ENV HF_HOME="/app/model_cache"
 # Pre-download the model into the specified local folder
 RUN python -c "from model import get_classifier; get_classifier()"
 
+EXPOSE 9191
+
 # Run the application
 CMD ["python", "main.py"]

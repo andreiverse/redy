@@ -1,0 +1,155 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE: ghcr.io/andreiverse/newsandreivip
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-rust:
+    name: Run Rust Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run Rust Tests
+        run: cargo test --verbose
+
+  build-images:
+    name: Build Images
+    needs: test-rust
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Server
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: server/Dockerfile
+          push: false
+          tags: server:local
+          outputs: type=docker,dest=/tmp/server.tar
+
+      - name: Build Client
+        uses: docker/build-push-action@v5
+        with:
+          context: client
+          file: client/Dockerfile
+          push: false
+          tags: client:local
+          outputs: type=docker,dest=/tmp/client.tar
+
+      - name: Build ML Worker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ml-worker/Dockerfile
+          push: false
+          tags: ml-worker:local
+          outputs: type=docker,dest=/tmp/ml-worker.tar
+
+      - name: Upload Server Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-image
+          path: /tmp/server.tar
+
+      - name: Upload Client Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-image
+          path: /tmp/client.tar
+
+      - name: Upload ML Worker Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-worker-image
+          path: /tmp/ml-worker.tar
+
+  push-images:
+    name: Push Images
+    needs: build-images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp
+          merge-multiple: true
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load Server image
+        run: docker load --input /tmp/server.tar
+
+      - name: Load Client image
+        run: docker load --input /tmp/client.tar
+
+      - name: Load ML Worker image
+        run: docker load --input /tmp/ml-worker.tar
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.IMAGE_BASE }}-server
+            ${{ env.IMAGE_BASE }}-client
+            ${{ env.IMAGE_BASE }}-ml-worker
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      - name: Tag and Push Images
+        run: |
+          # Define tags from metadata output
+          TAGS_RAW="${{ steps.meta.outputs.tags }}"
+          
+          # Push Server
+          for tag in $(echo "$TAGS_RAW" | grep "server"); do
+            docker tag server:local "$tag"
+            docker push "$tag"
+          done
+          
+          # Push Client
+          for tag in $(echo "$TAGS_RAW" | grep "client"); do
+            docker tag client:local "$tag"
+            docker push "$tag"
+          done
+          
+          # Push ML Worker
+          for tag in $(echo "$TAGS_RAW" | grep "ml-worker"); do
+            docker tag ml-worker:local "$tag"
+            docker push "$tag"
+          done

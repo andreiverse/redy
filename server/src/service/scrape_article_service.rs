@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 use std::net::{IpAddr, ToSocketAddrs};
 use reqwest::Url;
 
-use crate::service::article_fetcher::{amp, googlebot, headless, normal};
+use crate::service::article_fetcher::{amp, googlebot, normal};
 
 #[derive(Serialize, ToSchema)]
 pub struct HtmlArticle {
@@ -45,7 +45,7 @@ pub fn validate_url(url_str: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn get_url_contents_headless(url: &str) -> Result<String> {
+pub async fn get_url_contents(url: &str) -> Result<String> {
     validate_url(url)?;
 
     if let Ok(html) = normal::fetch(url).await {
@@ -63,12 +63,11 @@ pub async fn get_url_contents_headless(url: &str) -> Result<String> {
         return Ok(html);
     }
 
-    let html = headless::fetch(url).await?;
-    Ok(html)
+    Err(anyhow!("Failed to fetch content from all sources"))
 }
 
 pub async fn parse_article_from_url(url: &str) -> Result<HtmlArticle> {
-    let body = get_url_contents_headless(url).await?;
+    let body = get_url_contents(url).await?;
 
     let article =
         parse(&body, Some(url), None).map_err(|e| anyhow!("Legible parse error: {}", e))?;

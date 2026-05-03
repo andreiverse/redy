@@ -59,13 +59,13 @@ impl MigrationTrait for Migration {
         let db = manager.get_connection();
 
         // 3. Prefill categories from article_data
-        db.execute(Statement::from_string(
+        db.execute_raw(Statement::from_string(
             manager.get_database_backend(),
             "INSERT INTO category (human_name, model_description, human_description) SELECT DISTINCT category, category, category FROM article_data WHERE category IS NOT NULL".to_owned()
         )).await?;
 
         // 4. Assign categories to feeds if they contain at least one article from that category
-        db.execute(Statement::from_string(
+        db.execute_raw(Statement::from_string(
             manager.get_database_backend(),
             "INSERT INTO feed_category (feed_id, category_id) \
              SELECT DISTINCT a.feed_id, c.id \
@@ -87,7 +87,7 @@ impl MigrationTrait for Migration {
             .await?;
 
         // 5.2 Map existing string categories to IDs
-        db.execute(Statement::from_string(
+        db.execute_raw(Statement::from_string(
             manager.get_database_backend(),
             "UPDATE article_data ad SET category_id = c.id \
              FROM category c \
@@ -152,7 +152,7 @@ impl MigrationTrait for Migration {
 
         // Map IDs back to strings before dropping
         let db = manager.get_connection();
-        db.execute(Statement::from_string(
+        db.execute_raw(Statement::from_string(
             manager.get_database_backend(),
             "UPDATE article_data ad SET category = c.human_name \
              FROM category c \

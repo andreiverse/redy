@@ -3,6 +3,7 @@ import nats
 from nats.js.errors import BadRequestError
 import uuid
 import json
+from aiohttp import web
 
 import sentimental_analysis_worker
 import categorize_worker
@@ -10,12 +11,32 @@ import categorize_worker
 from config import NATS_SERVER
 import config
 import utils
+import model
 
 
 STREAM_NAME = "ML"
 SUBJECTS = ["tasks.ml.*"]
 DURABLE_NAME = "ml-worker"
 QUEUE_GROUP = "ml-worker"
+
+async def handle_healthz(request):
+    return web.Response(text="OK")
+
+async def handle_readyz(request):
+    if model.is_model_loaded():
+        return web.Response(text="READY")
+    else:
+        return web.Response(text="NOT READY", status=503)
+
+async def start_http_server():
+    app = web.Application()
+    app.router.add_get('/healthz', handle_healthz)
+    app.router.add_get('/readyz', handle_readyz)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', config.HTTP_PORT)
+    await site.start()
+    print(f"HTTP server started on port {config.HTTP_PORT}")
 
 
 async def ensure_stream(js):
@@ -42,8 +63,13 @@ async def ensure_stream(js):
             subjects=SUBJECTS
         )
 
-
 async def run():
+    await start_http_server()
+
+    # Load models in background
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, model.load_models)
+
     nc = await nats.connect(NATS_SERVER)
     js = nc.jetstream()
 

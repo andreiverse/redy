@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
             FROM feed
             WHERE article.feed_id = feed.id
         "#;
-        manager.get_connection().execute(Statement::from_string(
+        manager.get_connection().execute_raw(Statement::from_string(
             DbBackend::Postgres,
             sql.to_string(),
         )).await?;

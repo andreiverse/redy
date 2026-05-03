@@ -13,3 +13,4 @@ typing-extensions==4.15.0
 transformers==4.40.1
 torch==2.2.2
 numpy<2.0.0
+aiohttp==3.11.11

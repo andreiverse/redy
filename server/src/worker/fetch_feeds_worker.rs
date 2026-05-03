@@ -2,7 +2,7 @@ use async_nats::jetstream::{self};
 use chrono::{Duration, Utc};
 use reqwest::Url;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Set,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, ExprTrait, QueryFilter, Set,
     TryIntoModel,
 };
 use serde_json::Map;
@@ -11,7 +11,7 @@ use std::time::Instant;
 use tracing::{error, info};
 
 use crate::{
-    entities::{article, feed}, metrics, service::{rss_fetcher_service, worker_service::{self, WorkerTask}}, worker
+    entities::{article, feed}, metrics, service::{rss_fetcher_service, worker_service::{self, WorkerTask}} 
 };
 
 pub async fn fetch_feeds_task(

@@ -6,6 +6,12 @@ MODEL_ID = "MoritzLaurer/deberta-v3-xsmall-zeroshot-v1.1-all-33"
 
 _classifier = None
 
+def is_model_loaded():
+    return _classifier is not None
+
+def load_models():
+    get_classifier()
+
 def get_classifier():
     global _classifier
     if _classifier is None:

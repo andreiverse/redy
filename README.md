@@ -9,7 +9,6 @@ A high-performance, event-driven RSS engine and content processing platform.
 *   **Intelligent Aggregation**: Scheduled RSS/Atom feed synchronization with stateful tracking.
 *   **Deep Content Extraction**: Advanced scraping engine supporting multiple strategies:
     *   **Normal**: Direct HTTP requests for standard sites.
-    *   **Headless**: Full Chromium-based rendering for SPA and JS-heavy sites.
     *   **Googlebot Spoofing**: Bypasses basic bot detection.
     *   **AMP Support**: Prioritizes accelerated mobile pages for faster, cleaner parsing.
 *   **Content Sanitization**: Integrated readability algorithms to extract core article text, stripping ads, trackers, and navigation clutter.
@@ -23,7 +22,6 @@ A high-performance, event-driven RSS engine and content processing platform.
 - **Framework**: [Axum](https://github.com/tokio-rs/axum) for a high-performance, type-safe API.
 - **ORM**: [SeaORM](https://www.sea-ql.org/SeaORM/) with PostgreSQL for robust data modeling.
 - **Messaging**: [NATS Jetstream](https://nats.io/) for reliable, distributed task distribution.
-- **Browser Automation**: [Chromiumoxide](https://github.com/mattsse/chromiumoxide) for headless content scraping.
 - **Documentation**: Automatic OpenAPI (Swagger) generation via [Utoipa](https://github.com/juhakivekas/utoipa).
 
 ### ML Worker (Python)

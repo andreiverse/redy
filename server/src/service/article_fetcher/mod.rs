@@ -4,7 +4,6 @@ use reqwest::Client;
 
 pub mod amp;
 pub mod googlebot;
-pub mod headless;
 pub mod normal;
 
 pub async fn fetch_with_client(client: &Client, url: &str) -> Result<(StatusCode, String)> {
