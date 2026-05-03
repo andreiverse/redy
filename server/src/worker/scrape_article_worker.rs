@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     entities::article,
     metrics,
-    service::{article_parser_service, worker_service},
+    service::{scrape_article_service, worker_service},
 };
 
 pub enum HandleResult {
@@ -36,7 +36,7 @@ pub async fn handle_article(
     let article_link = article.link.clone();
     let mut active_article = article.into_active_model();
 
-    let html_content = article_parser_service::parse_article_from_url(&article_link).await?;
+    let html_content = scrape_article_service::parse_article_from_url(&article_link).await?;
 
     active_article.html_content = Set(Some(html_content.html_content));
     active_article.update(db).await?;
@@ -95,19 +95,15 @@ pub async fn scrape_article_worker(
 
         match handle_article(db, article_uuid).await {
             Ok(HandleResult::Success) => {
-                // Try to publish both ML tasks. We use a single loop to publish them
+                // Try to publish all ML tasks. We use a single loop to publish them
                 // and if any fail, we Nak the original scrape message so it's retried.
                 let mut published_all = true;
 
-                if let Err(e) = worker_service::categorize_article_for_uuid(jetstream_context, article_uuid).await {
-                    error!("Couldn't publish tasks.ml.categorize for {}: {}", article_uuid, e);
-                    published_all = false;
-                }
-
-                if published_all {
-                    if let Err(e) = worker_service::calculate_sentimental_analysis_for_uuid(jetstream_context, article_uuid).await {
-                        error!("Couldn't publish tasks.ml.sentimental-analysis for {}: {}", article_uuid, e);
+                for task in worker_service::get_ml_tasks() {
+                    if let Err(e) = worker_service::publish_task_for_article(jetstream_context, task.subject(), article_uuid).await {
+                        error!("Couldn't publish {} for {}: {}", task.subject(), article_uuid, e);
                         published_all = false;
+                        break;
                     }
                 }
 

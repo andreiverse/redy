@@ -121,7 +121,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 "recalculating sentimental analysis, missing only: {}",
                 missing_only
             );
-            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await?;
+            worker_service::run_task_for_articles(&db, &js, &worker_service::SentimentalAnalysisTask, missing_only).await?;
             exit(0)
         }
         Commands::RerunMl { missing_only } => {
@@ -129,7 +129,7 @@ async fn main() -> Result<(), anyhow::Error> {
             exit(0);
         }
         Commands::CalculateSentimentalAnalysisForUuid { missing_only } => {
-            worker_service::calculate_sentimental_analysis(&db, &js, missing_only).await?;
+            worker_service::run_task_for_articles(&db, &js, &worker_service::SentimentalAnalysisTask, missing_only).await?;
             exit(0);
         }
     }

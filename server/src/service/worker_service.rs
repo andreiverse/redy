@@ -2,14 +2,55 @@ use anyhow::anyhow;
 use async_nats::jetstream;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use tokio_stream::StreamExt;
+use tracing::info;
 use tracing::log::error;
 use uuid::Uuid;
 
 use crate::entities::{article, article_data};
 use crate::dto::worker_dto::{QueueStats, ConsumerStats};
 
-const TASKS_ML_SENTIMENTAL_ANALYSIS_SUBJECT: &str = "tasks.ml.sentimental-analysis";
-const TASKS_ML_CATEGORIZE: &str = "tasks.ml.categorize";
+pub trait WorkerTask: Send + Sync {
+    fn name(&self) -> &'static str;
+    fn subject(&self) -> &'static str;
+    fn missing_condition(&self) -> sea_orm::Condition;
+}
+
+pub struct SentimentalAnalysisTask;
+impl WorkerTask for SentimentalAnalysisTask {
+    fn name(&self) -> &'static str {
+        "SentimentalAnalysis"
+    }
+    fn subject(&self) -> &'static str {
+        "tasks.ml.sentimental-analysis"
+    }
+    fn missing_condition(&self) -> sea_orm::Condition {
+        sea_orm::Condition::any()
+            .add(article_data::Column::SentimentScore.is_null())
+            .add(article_data::Column::Id.is_null())
+    }
+}
+
+pub struct CategorizeTask;
+impl WorkerTask for CategorizeTask {
+    fn name(&self) -> &'static str {
+        "Categorize"
+    }
+    fn subject(&self) -> &'static str {
+        "tasks.ml.categorize"
+    }
+    fn missing_condition(&self) -> sea_orm::Condition {
+        sea_orm::Condition::any()
+            .add(article_data::Column::CategoryId.is_null())
+            .add(article_data::Column::Id.is_null())
+    }
+}
+
+pub fn get_ml_tasks() -> Vec<Box<dyn WorkerTask>> {
+    vec![
+        Box::new(SentimentalAnalysisTask),
+        Box::new(CategorizeTask),
+    ]
+}
 
 pub async fn get_all_queue_stats(js: &jetstream::Context) -> Result<Vec<QueueStats>, anyhow::Error> {
     let mut all_stats = Vec::new();
@@ -54,14 +95,6 @@ pub async fn get_stream_stats(js: &jetstream::Context, stream_name: &str) -> Res
     })
 }
 
-pub async fn calculate_sentimental_analysis_for_uuid(js: &jetstream::Context, article_uuid: Uuid) -> Result<(), anyhow::Error> {
-    publish_task_for_article(js, TASKS_ML_SENTIMENTAL_ANALYSIS_SUBJECT, article_uuid).await
-}
-
-pub async fn categorize_article_for_uuid(js: &jetstream::Context, article_uuid: Uuid) -> Result<(), anyhow::Error> {
-    publish_task_for_article(js, TASKS_ML_CATEGORIZE, article_uuid).await
-}
-
 pub async fn publish_task_for_article(
     js: &jetstream::Context,
     subject: &str,
@@ -79,63 +112,40 @@ pub async fn publish_task_for_article(
 }
 
 pub async fn run_ml_for_uuid(js: &jetstream::Context, article_uuid: Uuid) -> Result<(), anyhow::Error> {
-    calculate_sentimental_analysis_for_uuid(js, article_uuid).await?;
-    categorize_article_for_uuid(js, article_uuid).await?;
+    for task in get_ml_tasks() {
+        publish_task_for_article(js, task.subject(), article_uuid).await?;
+    }
 
     Ok(())
 }
 
 pub async fn run_ml(db: &DatabaseConnection, js: &jetstream::Context, missing_only: bool) -> Result<(), anyhow::Error>{
-    calculate_sentimental_analysis(db, js, missing_only).await?;
-    categorize_articles(db, js, missing_only).await?;
+    for task in get_ml_tasks() {
+        run_task_for_articles(db, js, task.as_ref(), missing_only).await?;
+    }
 
     Ok(())
 }
 
-pub async fn categorize_articles(
+pub async fn run_task_for_articles(
     db: &DatabaseConnection,
     js: &jetstream::Context,
+    task: &dyn WorkerTask,
     missing_only: bool,
 ) -> Result<(), anyhow::Error> {
+    info!("Scheduling task: {} (missing_only: {})", task.name(), missing_only);
     let mut articles_query = article::Entity::find().left_join(article_data::Entity);
 
     if missing_only {
-        articles_query = articles_query.filter(
-            sea_orm::Condition::any()
-                .add(article_data::Column::CategoryId.is_null())
-                .add(article_data::Column::Id.is_null()),
-        );
+        articles_query = articles_query.filter(task.missing_condition());
     }
 
     let articles = articles_query.all(db).await.unwrap();
 
     for article in articles {
-        categorize_article_for_uuid(js, article.id).await?;
+        publish_task_for_article(js, task.subject(), article.id).await?;
     }
 
     Ok(())
 }
 
-pub async fn calculate_sentimental_analysis(
-    db: &DatabaseConnection,
-    js: &jetstream::Context,
-    missing_only: bool,
-) -> Result<(), anyhow::Error> {
-    let mut articles_query = article::Entity::find().left_join(article_data::Entity);
-
-    if missing_only {
-        articles_query = articles_query.filter(
-            sea_orm::Condition::any()
-                .add(article_data::Column::SentimentScore.is_null())
-                .add(article_data::Column::Id.is_null()),
-        );
-    }
-
-    let articles = articles_query.all(db).await.unwrap();
-
-    for article in articles {
-        calculate_sentimental_analysis_for_uuid(js, article.id).await?;
-    }
-
-    Ok(())
-}

@@ -21,7 +21,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY server/ server/
 COPY migration/ migration/
 # Build the application - specifically the redy crate
-RUN cargo build --release --bin redy
+RUN cargo build --release --bin server
 
 # Stage 4: Runtime
 FROM debian:bookworm-slim AS runtime
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the binary from the builder
-COPY --from=builder /app/target/release/redy /app/redy
+COPY --from=builder /app/target/release/server /app/server
 
 # Expose the application port
 EXPOSE 8080
@@ -42,4 +42,4 @@ EXPOSE 9091
 ENV CHROME=/usr/bin/chromium
 
 # Run the application
-ENTRYPOINT ["/app/redy", "run-server"]
+ENTRYPOINT ["/app/server", "run-server"]

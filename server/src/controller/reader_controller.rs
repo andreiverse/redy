@@ -1,7 +1,7 @@
 use crate::{
     AppState,
     api::error::AppError,
-    service::article_parser_service::{HtmlArticle, parse_article_from_url},
+    service::scrape_article_service::{HtmlArticle, parse_article_from_url},
 };
 use axum::{
     Json,

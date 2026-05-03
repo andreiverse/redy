@@ -32,8 +32,8 @@ def handle_categorize(article_uuid: uuid.UUID) -> utils.Status:
         db_categories = repository.get_all_categories()
     
     if not db_categories:
-        print(f"Error: No categories found in database for article {article_uuid}")
-        return utils.Status.FAILED
+        print(f"Warn: No categories found in database for article {article_uuid}")
+        return utils.Status.SUCCESS
 
     # Map model_description -> category_id
     cat_mapping = {desc: cid for cid, desc in db_categories}

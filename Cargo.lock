@@ -3646,49 +3646,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "redy"
-version = "0.1.0"
-dependencies = [
- "ammonia",
- "anyhow",
- "async-nats",
- "axum",
- "axum-oidc",
- "chromiumoxide",
- "chrono",
- "clap",
- "dotenv",
- "futures",
- "lazy_static",
- "legible",
- "metrics",
- "metrics-exporter-prometheus",
- "migration",
- "openidconnect",
- "readabilityrs",
- "reqwest 0.13.2",
- "rss",
- "sea-orm",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "thiserror 2.0.18",
- "tokio",
- "tokio-stream",
- "tower 0.4.13",
- "tower-http",
- "tower-sessions",
- "tower-sessions-redis-store",
- "tracing",
- "tracing-log",
- "tracing-subscriber",
- "utoipa",
- "utoipa-axum",
- "utoipa-swagger-ui",
- "uuid",
-]
-
-[[package]]
 name = "ref-cast"
 version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4542,6 +4499,49 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
+]
+
+[[package]]
+name = "server"
+version = "0.1.0"
+dependencies = [
+ "ammonia",
+ "anyhow",
+ "async-nats",
+ "axum",
+ "axum-oidc",
+ "chromiumoxide",
+ "chrono",
+ "clap",
+ "dotenv",
+ "futures",
+ "lazy_static",
+ "legible",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "migration",
+ "openidconnect",
+ "readabilityrs",
+ "reqwest 0.13.2",
+ "rss",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-stream",
+ "tower 0.4.13",
+ "tower-http",
+ "tower-sessions",
+ "tower-sessions-redis-store",
+ "tracing",
+ "tracing-log",
+ "tracing-subscriber",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]
