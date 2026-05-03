@@ -5,14 +5,13 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Set,
     TryIntoModel,
 };
+use serde_json::Map;
 use std::result::Result::Ok;
 use std::time::Instant;
 use tracing::{error, info};
 
 use crate::{
-    entities::{article, feed},
-    service::rss_fetcher_service,
-    metrics,
+    entities::{article, feed}, metrics, service::{rss_fetcher_service, worker_service::{self, WorkerTask}}, worker
 };
 
 pub async fn fetch_feeds_task(
@@ -102,9 +101,8 @@ pub async fn handle_feed(
                         url_str, model.id, subject
                     );
 
-                    let payload = model.id.as_bytes().to_vec();
-                    let js_res = jetstream_context.publish(subject, payload.into()).await;
-                    if let Err(e) = js_res {
+                    let js_res = worker_service::publish_task_for_article(jetstream_context, worker_service::ScrapeTask.subject(), model.id, Map::new());
+                    if let Err(e) = js_res.await {
                         error!("NATS publish failed for article {}: {:?}", model.id, e);
                     }
                 }

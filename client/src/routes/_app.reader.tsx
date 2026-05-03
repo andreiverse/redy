@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/com
 import { $api } from '#/lib/api'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from "zod";
+import { RescheduleArticleDialog } from '#/components/article/RescheduleArticleDialog';
 
 const searchSchema = z.object({
   article_uuid: z.string(),
@@ -16,7 +17,6 @@ export const Route = createFileRoute('/_app/reader')({
 function RouteComponent() {
   const { article_uuid } = Route.useSearch();
 
-  const rerun_ml = $api.useMutation("post", "/workers/article/{article_uuid}");
   const { data: user } = $api.useQuery('get', '/auth/me', undefined, {
     retry: false
   });
@@ -67,20 +67,7 @@ function RouteComponent() {
               <span>Language: {articleQuery.data.article.language}</span>
             }
             <div>
-              {user?.isAdmin && <Button onClick={async () => {
-                rerun_ml.mutateAsync({
-                  params: {
-                    path: {
-                      article_uuid
-                    }
-                  }
-                }).then(res => {
-                  if (res.error) alert("ML Error: " + res.error)
-                  else alert("scheduled for rerunning...")
-                }).catch(e => {
-                  alert(JSON.stringify(e))
-                })
-              }}>Rerun ML</Button>}
+              {user?.isAdmin && <RescheduleArticleDialog articleUuid={article_uuid} />}
             </div>
           </CardDescription>
         </CardHeader>

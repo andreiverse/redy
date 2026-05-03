@@ -2,6 +2,7 @@ import asyncio
 import nats
 from nats.js.errors import BadRequestError
 import uuid
+import json
 
 import sentimental_analysis_worker
 import categorize_worker
@@ -50,11 +51,14 @@ async def run():
 
     async def message_handler(msg):
         try:
-            if len(msg.data) != 16:
+            payload = json.loads(msg.data.decode())
+            article_uuid_str = payload.get("article_uuid")
+            if article_uuid_str is None:
+                print(f"Task {msg.subject} received without article_uuid, skipping.")
                 await msg.ack()
                 return
 
-            raw_uuid = uuid.UUID(bytes=msg.data)
+            article_uuid = uuid.UUID(article_uuid_str)
             subject = msg.subject
 
             loop = asyncio.get_event_loop()
@@ -63,14 +67,14 @@ async def run():
                 status = await loop.run_in_executor(
                     None,
                     sentimental_analysis_worker.handle_sentimental_analysis,
-                    raw_uuid
+                    article_uuid
                 )
 
             elif subject == "tasks.ml.categorize":
                 status = await loop.run_in_executor(
                     None,
                     categorize_worker.handle_categorize,
-                    raw_uuid
+                    article_uuid
                 )
 
             else:

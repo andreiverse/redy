@@ -9,6 +9,7 @@ use tracing::{error, info};
 use uuid::Uuid;
 
 use crate::{
+    dto::worker_dto::WorkerTaskPayload,
     entities::article,
     metrics,
     service::{scrape_article_service, worker_service},
@@ -28,8 +29,8 @@ pub async fn handle_article(
         None => return Ok(HandleResult::NotFound),
     };
 
-    // Idempotency check: if we already have content, don't scrape again
-    if article.html_content.is_some() {
+    // Won't scrape again if the html content is from feed
+    if article.html_content_from_feed {
         return Ok(HandleResult::Success);
     }
 
@@ -75,15 +76,27 @@ pub async fn scrape_article_worker(
 
     while let Some(Ok(msg)) = messages.next().await {
         let start = Instant::now();
-        let article_uuid = match Uuid::from_slice(&msg.payload) {
-            Ok(uuid) => uuid,
+        let payload: WorkerTaskPayload = match serde_json::from_slice(&msg.payload) {
+            Ok(p) => p,
             Err(e) => {
-                error!("Invalid UUID bytes (len={}): {}", msg.payload.len(), e);
+                error!("Invalid payload (len={}): {}", msg.payload.len(), e);
                 if let Err(e) = msg.ack().await {
                     error!("Failed to ack invalid message: {}", e);
                 }
                 metrics::record_worker_task("scrape_article", false, start.elapsed());
-                continue; // skip processing
+                continue;
+            }
+        };
+
+        let article_uuid = match payload.article_uuid {
+            Some(u) => u,
+            None => {
+                error!("Scrape task received without article_uuid");
+                if let Err(e) = msg.ack().await {
+                    error!("Failed to ack invalid message: {}", e);
+                }
+                metrics::record_worker_task("scrape_article", false, start.elapsed());
+                continue;
             }
         };
 
@@ -100,7 +113,7 @@ pub async fn scrape_article_worker(
                 let mut published_all = true;
 
                 for task in worker_service::get_ml_tasks() {
-                    if let Err(e) = worker_service::publish_task_for_article(jetstream_context, task.subject(), article_uuid).await {
+                    if let Err(e) = worker_service::publish_task_for_article(jetstream_context, task.subject(), article_uuid, serde_json::Map::new()).await {
                         error!("Couldn't publish {} for {}: {}", task.subject(), article_uuid, e);
                         published_all = false;
                         break;

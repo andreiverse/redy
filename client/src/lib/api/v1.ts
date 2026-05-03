@@ -324,6 +324,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workers/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post_reschedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workers/stats": {
         parameters: {
             query?: never;
@@ -428,9 +444,21 @@ export interface components {
             messages: number;
             stream_name: string;
         };
+        RescheduleRequest: {
+            /** Format: uuid */
+            article_uuid?: string | null;
+            /** Format: date-time */
+            from_date?: string | null;
+            missing_only?: boolean | null;
+            tasks?: components["schemas"]["TaskType"][] | null;
+            /** Format: date-time */
+            to_date?: string | null;
+        };
         ScheduleResult: {
             error?: string | null;
         };
+        /** @enum {string} */
+        TaskType: "Scrape" | "SentimentalAnalysis" | "Categorize";
         UpdateFeedDto: {
             defaultLanguage?: string | null;
             feedType?: null | components["schemas"]["FeedTypeDto"];
@@ -1190,6 +1218,29 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleResult"];
+                };
+            };
+        };
+    };
+    post_reschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleRequest"];
+            };
+        };
         responses: {
             200: {
                 headers: {

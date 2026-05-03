@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/com
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '#/components/ui/chart'
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { Activity, PlayCircle } from 'lucide-react'
+import { RescheduleTaskForm } from '#/components/article/RescheduleTaskForm'
 
 export const Route = createFileRoute('/admin/')({
   component: AdminIndex,
@@ -126,6 +127,15 @@ function AdminIndex() {
             </Card>
           ))
         )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Global Reschedule Tasks</CardTitle>
+            <CardDescription>Run tasks for all articles in the system.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RescheduleTaskForm />
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="col-span-4">
