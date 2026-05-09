@@ -208,6 +208,10 @@ pub async fn reschedule_articles(
         articles_query = articles_query.filter(article::Column::Id.eq(uuid));
     }
 
+    if let Some(feed_uuid) = req.feed_uuid {
+        articles_query = articles_query.filter(article::Column::FeedId.eq(feed_uuid));
+    }
+
     if let Some(from) = req.from_date {
         articles_query = articles_query.filter(article::Column::FetchedAt.gte(from));
     }

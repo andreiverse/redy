@@ -10,7 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "gen-api": "pnpm dlx openapi-typescript http://localhost:8080/api-docs/openapi.json -o ./src/lib/api/v1.ts"
+    "gen-api": "pnpm dlx openapi-typescript ./openapi.json -o ./src/lib/api/v1.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

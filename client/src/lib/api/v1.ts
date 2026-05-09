@@ -447,6 +447,8 @@ export interface components {
         RescheduleRequest: {
             /** Format: uuid */
             article_uuid?: string | null;
+            /** Format: uuid */
+            feed_uuid?: string | null;
             /** Format: date-time */
             from_date?: string | null;
             missing_only?: boolean | null;

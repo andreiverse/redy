@@ -27,6 +27,7 @@ export function FeedCategoryManager({ feedId }: { feedId: string }) {
     const { mutate: addCategory } = $api.useMutation("post", "/feed/{feed_id}/categories");
     const { mutate: removeCategory } = $api.useMutation("delete", "/feed/{feed_id}/categories/{category_id}");
     const { mutate: updateCategory } = $api.useMutation("put", "/feed/{feed_id}/categories/{category_id}");
+    const { mutate: rescheduleFeed, isPending: isRescheduling } = $api.useMutation("post", "/workers/reschedule");
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
     const [override, setOverride] = useState<string>("");
@@ -160,6 +161,31 @@ export function FeedCategoryManager({ feedId }: { feedId: string }) {
                             )}
                         </div>
                     </div>
+                </div>
+
+                <div className="pt-4 border-t mt-auto">
+                    <Button 
+                        variant="secondary" 
+                        className="w-full"
+                        disabled={isRescheduling}
+                        onClick={() => {
+                            if (confirm("This will reschedule all articles in this feed for categorization and sentiment analysis. Continue?")) {
+                                rescheduleFeed({
+                                    body: {
+                                        feed_uuid: feedId,
+                                        tasks: ["Categorize", "SentimentalAnalysis"],
+                                        missing_only: false
+                                    }
+                                }, {
+                                    onSuccess: () => {
+                                        alert("Rescheduling started successfully.");
+                                    }
+                                });
+                            }
+                        }}
+                    >
+                        {isRescheduling ? "Rescheduling..." : "Reschedule all feed articles"}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

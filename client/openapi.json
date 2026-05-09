@@ -1,0 +1,1508 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "utoipa-axum",
+    "description": "Utoipa's axum bindings for seamless integration for the two",
+    "contact": {
+      "name": "Juha Kukkonen",
+      "email": "juha7kukkonen@gmail.com"
+    },
+    "license": {
+      "name": "MIT OR Apache-2.0",
+      "identifier": "MIT OR Apache-2.0"
+    },
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/articles": {
+      "get": {
+        "tags": [
+          "article"
+        ],
+        "operationId": "article_get",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArticleWithDataDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/articles/categories": {
+      "get": {
+        "tags": [
+          "article"
+        ],
+        "operationId": "article_get_categories",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/articles/{article_uuid}": {
+      "get": {
+        "tags": [
+          "article"
+        ],
+        "operationId": "article_get_by_uuid",
+        "parameters": [
+          {
+            "name": "article_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleWithDataDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/callback": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "callback",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirect to frontend if redirect_to_frontend was true"
+          },
+          "400": {
+            "description": "Invalid state or code"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "login",
+        "parameters": [
+          {
+            "name": "redirect_to_frontend",
+            "in": "query",
+            "description": "Redirect to frontend after successful login",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to OIDC provider"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not logged in"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "delete_me",
+        "responses": {
+          "200": {
+            "description": "Successfully deleted user"
+          },
+          "401": {
+            "description": "Not logged in"
+          }
+        }
+      }
+    },
+    "/category": {
+      "get": {
+        "tags": [
+          "category"
+        ],
+        "operationId": "category_get_all",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "category"
+        ],
+        "operationId": "category_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/category/{id}": {
+      "get": {
+        "tags": [
+          "category"
+        ],
+        "operationId": "category_get_by_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "category"
+        ],
+        "operationId": "category_put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "category"
+        ],
+        "operationId": "category_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully"
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        }
+      }
+    },
+    "/favorites": {
+      "get": {
+        "tags": [
+          "user_feed_favorite"
+        ],
+        "operationId": "get_favorite_feeds",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favorites/{feed_uuid}": {
+      "post": {
+        "tags": [
+          "user_feed_favorite"
+        ],
+        "operationId": "favorite_feed",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed favorited successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user_feed_favorite"
+        ],
+        "operationId": "unfavorite_feed",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed unfavorited successfully"
+          }
+        }
+      }
+    },
+    "/feed": {
+      "get": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed/{feed_id}/categories": {
+      "get": {
+        "tags": [
+          "feed_category"
+        ],
+        "operationId": "feed_category_get_all",
+        "parameters": [
+          {
+            "name": "feed_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedCategoryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "feed_category"
+        ],
+        "operationId": "feed_category_post",
+        "parameters": [
+          {
+            "name": "feed_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedCategoryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedCategoryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed/{feed_id}/categories/{category_id}": {
+      "put": {
+        "tags": [
+          "feed_category"
+        ],
+        "operationId": "feed_category_put",
+        "parameters": [
+          {
+            "name": "feed_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedCategoryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedCategoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Feed category not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "feed_category"
+        ],
+        "operationId": "feed_category_delete",
+        "parameters": [
+          {
+            "name": "feed_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed category deleted successfully"
+          },
+          "404": {
+            "description": "Feed category not found"
+          }
+        }
+      }
+    },
+    "/feed/{feed_uuid}": {
+      "get": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_get_by_uuid",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_delete",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feed deleted successfully"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_patch",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFeedDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed/{feed_uuid}/fetch": {
+      "get": {
+        "tags": [
+          "feed"
+        ],
+        "operationId": "feed_fetch_by_uuid",
+        "parameters": [
+          {
+            "name": "feed_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArticleDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reader": {
+      "get": {
+        "tags": [
+          "reader"
+        ],
+        "operationId": "reader_get",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HtmlArticle"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "operationId": "user_get_all",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{user_id}": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "operationId": "user_get_by_id",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "operationId": "user_delete",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "user"
+        ],
+        "operationId": "user_patch",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workers/article/{article_uuid}": {
+      "post": {
+        "tags": [
+          "worker"
+        ],
+        "operationId": "post_article_uuid",
+        "parameters": [
+          {
+            "name": "article_uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workers/reschedule": {
+      "post": {
+        "tags": [
+          "worker"
+        ],
+        "operationId": "post_reschedule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workers/stats": {
+      "get": {
+        "tags": [
+          "worker"
+        ],
+        "operationId": "get_worker_stats",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QueueStats"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArticleDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "feedId",
+          "title",
+          "language",
+          "link",
+          "status",
+          "fetchedAt",
+          "contentHash"
+        ],
+        "properties": {
+          "contentHash": {
+            "type": "string"
+          },
+          "feedDescription": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "htmlContent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "language": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ArticleStatusDto"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ArticleStatusDto": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "extracted",
+          "extractionFailed",
+          "done"
+        ]
+      },
+      "ArticleWithDataDto": {
+        "type": "object",
+        "required": [
+          "article"
+        ],
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/ArticleDto"
+          },
+          "categoryId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "sentimentScore": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "CategoryDto": {
+        "type": "object",
+        "required": [
+          "humanName",
+          "humanDescription",
+          "modelDescription"
+        ],
+        "properties": {
+          "humanDescription": {
+            "type": "string"
+          },
+          "humanName": {
+            "type": "string"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "modelDescription": {
+            "type": "string"
+          }
+        }
+      },
+      "ConsumerStats": {
+        "type": "object",
+        "required": [
+          "name",
+          "pending",
+          "ack_pending",
+          "redelivered"
+        ],
+        "properties": {
+          "ack_pending": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string"
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "redelivered": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "CreateFeedDto": {
+        "type": "object",
+        "required": [
+          "url",
+          "name",
+          "defaultLanguage",
+          "feedType"
+        ],
+        "properties": {
+          "defaultLanguage": {
+            "type": "string"
+          },
+          "feedType": {
+            "$ref": "#/components/schemas/FeedTypeDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedCategoryDto": {
+        "type": "object",
+        "required": [
+          "feedId",
+          "categoryId"
+        ],
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "feedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modelDescriptionOverride": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "FeedDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "url",
+          "name",
+          "defaultLanguage",
+          "createdAt",
+          "feedType"
+        ],
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "defaultLanguage": {
+            "type": "string"
+          },
+          "feedType": {
+            "$ref": "#/components/schemas/FeedTypeDto"
+          },
+          "fetchedSecondsAgo": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastFetch": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerUuid": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedTypeDto": {
+        "type": "string",
+        "enum": [
+          "rss"
+        ]
+      },
+      "HtmlArticle": {
+        "type": "object",
+        "required": [
+          "html_content",
+          "title"
+        ],
+        "properties": {
+          "html_content": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "QueueStats": {
+        "type": "object",
+        "required": [
+          "stream_name",
+          "messages",
+          "bytes",
+          "consumer_count",
+          "consumers"
+        ],
+        "properties": {
+          "bytes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "consumer_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "consumers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerStats"
+            }
+          },
+          "messages": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "stream_name": {
+            "type": "string"
+          }
+        }
+      },
+      "RescheduleRequest": {
+        "type": "object",
+        "properties": {
+          "article_uuid": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "feed_uuid": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "from_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "missing_only": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "tasks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TaskType"
+            }
+          },
+          "to_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "ScheduleResult": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "Scrape",
+          "SentimentalAnalysis",
+          "Categorize"
+        ]
+      },
+      "UpdateFeedDto": {
+        "type": "object",
+        "properties": {
+          "defaultLanguage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feedType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/FeedTypeDto"
+              }
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ownerUuid": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "canCreateFeeds": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "isAdmin": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "UserDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "username",
+          "isAdmin",
+          "canCreateFeeds"
+        ],
+        "properties": {
+          "canCreateFeeds": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

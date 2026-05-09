@@ -31,6 +31,7 @@ impl std::fmt::Display for TaskType {
 #[derive(Serialize, Deserialize, ToSchema, Debug)]
 pub struct RescheduleRequest {
     pub article_uuid: Option<Uuid>,
+    pub feed_uuid: Option<Uuid>,
     pub tasks: Option<Vec<TaskType>>,
     pub missing_only: Option<bool>,
     pub from_date: Option<chrono::DateTime<chrono::Utc>>,

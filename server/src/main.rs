@@ -61,6 +61,10 @@ enum Commands {
         #[arg(long)]
         uuid: Uuid,
     },
+    ExportOpenapi {
+        #[arg(long)]
+        path: String,
+    },
     CalculateSentimentalAnalysisForUuid {
         #[arg(long)]
         missing_only: bool,
@@ -88,6 +92,17 @@ async fn main() -> Result<(), anyhow::Error> {
         dotenv().ok();
     }
 
+    let cli = Cli::parse();
+
+    if let Commands::ExportOpenapi { path } = cli.command {
+        let api_router = controller::create_controller();
+        let (_, api) = api_router.split_for_parts();
+        let json = api.to_pretty_json()?;
+        std::fs::write(&path, json)?;
+        info!("OpenAPI spec exported to {}", path);
+        exit(0);
+    }
+
     let db_url = std::env::var("DATABASE_URL")
         .unwrap_or("postgres://user:password@localhost:5432/my_app_db".to_string());
     let mut opt = ConnectOptions::new(db_url);
@@ -102,8 +117,6 @@ async fn main() -> Result<(), anyhow::Error> {
     let nats_url = std::env::var("NATS_URL").unwrap_or("nats://localhost:4222".to_string());
     let client = async_nats::connect(nats_url).await?;
     let js = jetstream::new(client);
-
-    let cli = Cli::parse();
 
     Migrator::up(&db, None).await?;
 
@@ -132,6 +145,7 @@ async fn main() -> Result<(), anyhow::Error> {
             worker_service::run_task_for_articles(&db, &js, &worker_service::SentimentalAnalysisTask, missing_only).await?;
             exit(0);
         }
+        _ => {}
     }
 
     let auth_service = AuthService::new(
